@@ -8,35 +8,34 @@
 <style>
   /* ESTADO POR DEFECTO: FONDO MORADO */
   body {
-      background-color: #513159; /* El tono morado de tu diseño base */
-      transition: background-color 0.5s ease; /* Transición suave de 0.5 segundos */
+      background-color: #513159; 
+      transition: background-color 0.5s ease; 
       margin: 0;
   }
 
   /* ESTADO AL ACTIVAR LA CASILLA: FADE A NEGRO / GRIS OSCURO */
   body.nsfw-mode {
-      background-color: #121212; /* El gris oscuro/negro para el contenido de adultos */
+      background-color: #121212; 
   }
 
   /* ANIMACIÓN DE ENTRADA PARA LAS TARJETAS */
   @keyframes fadeInCard {
       0% {
           opacity: 0;
-          transform: translateY(20px); /* Empieza 20px más abajo */
+          transform: translateY(20px);
       }
       100% {
           opacity: 1;
-          transform: translateY(0); /* Termina en su posición original */
+          transform: translateY(0);
       }
   }
 
   /* REGLA PARA LAS TARJETAS DE PUBLICACIÓN */
   .card {
-      opacity: 0; /* Empieza invisible antes de la animación */
+      opacity: 0; 
       animation: fadeInCard 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   }
 
-  /* Un pequeño ajuste estético para alinear la casilla NSFW en la barra superior */
   .nsfw-control {
       display: flex;
       align-items: center;
@@ -54,18 +53,18 @@
       height: 16px;
   }
 
-  /* ESTILOS PARA LA INFORMACIÓN DEL LIGHTBOX */
+  /* ESTILOS PARA LA INFORMACIÓN DEL LIGHTBOX (PC) */
   .lightbox-info {
       position: absolute;
       bottom: 20px;
       left: 20px;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.85);
       color: #fff;
       padding: 15px 20px;
       border-radius: 8px;
       font-family: sans-serif;
       max-width: 320px;
-      z-index: 110;
+      z-index: 10005;
       text-align: left;
       border-left: 4px solid #e74c3c;
   }
@@ -81,7 +80,6 @@
       margin-bottom: 8px;
   }
   
-  /* CONTENEDOR DE TAGS INTERACTIVOS */
   .lightbox-info .lb-tags {
       font-size: 12px;
       color: #888;
@@ -91,7 +89,6 @@
       margin-top: 5px;
   }
   
-  /* ESTILO DE CADA TAG CLICABLE */
   .lightbox-info .tag-badge {
       background: #222;
       color: #e74c3c;
@@ -107,14 +104,14 @@
       color: #fff;
   }
 
-  /* NUEVOS ESTILOS PARA EL BOTÓN DE ESTRELLA CIRCULAR */
+  /* BOTÓN DE ESTRELLA EN LAS TARJETAS */
   .star-btn {
-      background: #eeeeee; /* Fondo gris claro */
+      background: #eeeeee; 
       border: none;
-      color: #888888; /* Estrella gris apagada por defecto */
+      color: #888888; 
       width: 36px;
       height: 36px;
-      border-radius: 50%; /* Forma circular perfecta */
+      border-radius: 50%; 
       cursor: pointer;
       transition: transform 0.2s, background 0.2s, color 0.2s;
       display: flex;
@@ -123,35 +120,34 @@
       padding: 0;
       font-size: 18px;
       user-select: none;
-      flex-shrink: 0; /* Evita que el círculo se deforme si el título es largo */
+      flex-shrink: 0; 
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
   .star-btn:hover {
       transform: scale(1.1);
       background: #e5e5e5;
-      color: #f1c40f; /* Amarillo dorado al pasar el cursor */
+      color: #f1c40f; 
   }
   .star-btn.starred {
       background: #eeeeee; 
-      color: #f1c40f; /* Amarillo dorado cuando está marcado */
+      color: #f1c40f; 
       animation: popEffect 0.3s ease-in-out;
   }
 
-  /* Contenedor fila para Título + Estrella en las tarjetas */
   .title-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 15px; /* Espaciado generoso entre título y botón */
+      gap: 15px; 
       width: 100%;
   }
 
-  /* Botón de Estrella específico para el Lightbox (Abajo a la derecha) */
+  /* Botón de Estrella específico para el Lightbox */
   .lightbox-star-btn {
       position: absolute;
       bottom: 20px;
       right: 20px;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.85);
       color: #555;
       font-size: 26px;
       border: none;
@@ -162,7 +158,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 110;
+      z-index: 10006;
       transition: transform 0.2s, color 0.2s;
   }
   .lightbox-star-btn:hover {
@@ -173,55 +169,62 @@
       color: #f1c40f;
   }
 
-  /* Animación de brinco al dar favorito */
   @keyframes popEffect {
       0% { transform: scale(1); }
       50% { transform: scale(1.3); }
       100% { transform: scale(1); }
   }
 
+  /* Modificación del Lightbox base para soportar scroll vertical en móviles si es necesario */
+  .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.95);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      overflow-y: auto; /* Permite scroll si el contenido es muy alto */
+  }
+
   /* =======================================================
-     SOLUCIÓN MÓVIL SÚPER ENFOCADA (MÁX 768PX)
+     SOLUCIÓN MÓVIL DISPOSITIVOS (MAX 768PX)
      ======================================================= */
   @media (max-width: 768px) {
       body {
-          padding: 10px !important; /* Reduce el margen exterior del sitio */
+          padding: 10px !important; 
       }
 
-      /* 1. Reestructurar la Topbar */
       .topbar {
-          flex-direction: column !important; /* Apila en vertical */
-          height: auto !important; /* Rompe los 70px fijos de tu style.css */
+          flex-direction: column !important; 
+          height: auto !important; 
           padding: 15px !important;
           gap: 15px !important;
       }
 
-      /* Fila 1: Todo lo que está a la izquierda (Logo + Menú) ocupará el 100% */
       .left-section {
           width: 100% !important;
-          justify-content: space-between !important; /* Separa logo a la izq y enlaces a la der */
+          justify-content: space-between !important; 
           gap: 10px !important;
       }
 
-      /* Escalamos el logo para pantallas pequeñas */
       .logo img {
-          width: 150px !important; /* Evita que aplaste el menú */
+          width: 150px !important; 
           height: auto !important;
       }
 
       .menu {
-          gap: 15px !important; /* Espaciado más cerrado para "Inicio" y "Subir Arte" */
+          gap: 15px !important; 
       }
 
       .menu a {
           font-size: 14px !important;
-          white-space: nowrap !important; /* Impide que el texto quepa en 2 líneas */
+          white-space: nowrap !important; 
       }
 
-      /* Fila 2: El Buscador y el Filtro NSFW */
       .search-box {
-          width: 100% !important; /* Toma todo el ancho disponible abajo del logo */
-          max-width: 100% !important; /* Rompe el max-width: 50% de PC */
+          width: 100% !important; 
+          max-width: 100% !important; 
           display: flex !important;
           align-items: center !important;
           justify-content: space-between !important;
@@ -229,21 +232,20 @@
       }
 
       .search-box input {
-          flex-grow: 1 !important; /* Hace que la barra de texto use todo el espacio libre */
+          flex-grow: 1 !important; 
           width: auto !important;
           padding: 10px 15px !important;
           font-size: 14px !important;
       }
 
       .nsfw-control {
-          margin-left: 0 !important; /* Resetea el margen de PC */
-          flex-shrink: 0 !important; /* Impide que el input aplaste el texto "NSFW" */
+          margin-left: 0 !important; 
+          flex-shrink: 0 !important; 
           white-space: nowrap !important;
       }
 
-      /* 2. Ajustes del Feed */
       .feed {
-          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important; /* Cuadrícula de 2 columnas estéticas */
+          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important; 
           gap: 10px !important;
       }
 
@@ -257,7 +259,7 @@
 
       .author {
           font-size: 12px !important;
-      }
+       }
 
       .card .star-btn {
           width: 30px !important;
@@ -265,28 +267,63 @@
           font-size: 14px !important;
       }
 
-      /* 3. Ajustes de la interfaz del Lightbox */
-      .lightbox-info {
-          left: 10px !important;
-          bottom: 85px !important;
-          right: 10px !important;
-          max-width: none !important;
-          padding: 10px !important;
+      /* ==========================================
+         CORRECCIÓN DEL LIGHTBOX EN TELÉFONOS
+         ========================================== */
+      .lightbox {
+          flex-direction: column !important; /* Coloca la imagen arriba y los datos abajo */
+          justify-content: flex-start !important; /* Empieza desde arriba para dar espacio al scroll */
+          padding: 20px 10px !important;
       }
 
+      .lightbox img {
+          max-width: 100% !important;
+          max-height: 60vh !important; /* Limita la imagen al 60% del alto para dejar libre el menú */
+          object-fit: contain !important;
+          margin-top: auto;
+          margin-bottom: 20px;
+      }
+
+      /* Cambiamos la información de "Flotante" a "Bloque estático" abajo */
+      .lightbox-info {
+          position: relative !important; /* Deja de flotar sobre la imagen */
+          left: 0 !important;
+          bottom: 0 !important;
+          right: 0 !important;
+          width: 100% !important;
+          max-width: 450px !important; /* Ancho máximo estético en celular */
+          margin: 0 auto auto auto !important; /* Centrado y empuja espacio libre */
+          background: #1a1a1a !important; /* Fondo gris oscuro uniforme */
+          box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+          border-left: 4px solid #e74c3c !important;
+          padding: 15px !important;
+          box-sizing: border-box !important;
+      }
+
+      /* Reposicionamos el botón de favoritos dentro del flujo del panel */
       .lightbox-star-btn {
-          bottom: 15px !important;
+          position: absolute !important;
+          top: 12px !important;
           right: 15px !important;
+          bottom: auto !important;
+          background: #2a2a2a !important;
+          width: 42px !important;
+          height: 42px !important;
+          font-size: 18px !important;
+      }
+
+      /* Flechas laterales flotando de forma discreta a los lados de la pantalla */
+      .nav-btn {
+          position: fixed !important;
+          top: 35% !important; /* Altura perfecta a los lados de la imagen */
           width: 45px !important;
           height: 45px !important;
-          font-size: 20px !important;
+          font-size: 18px !important;
+          background: rgba(0,0,0,0.6) !important;
+          border: 1px solid rgba(255,255,255,0.2) !important;
       }
-
-      .nav-btn {
-          width: 40px !important;
-          height: 55px !important;
-          font-size: 20px !important;
-      }
+      .left { left: 5px !important; }
+      .right { right: 5px !important; }
   }
 </style>
 </head>
@@ -329,9 +366,8 @@
         <div class="lb-title" id="lbTitle">Título</div>
         <div class="lb-author" id="lbAuthor">Autor</div>
         <div class="lb-tags" id="lbTags"></div>
+        <button class="lightbox-star-btn" id="lightboxStarBtn" onclick="toggleLightboxStar(event)">★</button>
     </div>
-
-    <button class="lightbox-star-btn" id="lightboxStarBtn" onclick="toggleLightboxStar(event)">★</button>
 </div>
 
 <script>
@@ -350,7 +386,7 @@ async function loadFeed() {
             redirect: "follow"
         });
         
-        if (!res.ok) throw new Error("Error al conectar con la base de datos de Drive");
+        if (!res.ok) throw new Error("Error al conectar con la base de datos");
         
         allPosts = await res.json();
         filterAndRender();
@@ -562,7 +598,7 @@ function prevImage(event){
 }
 
 document.getElementById("lightbox").addEventListener("click", (e) => {
-    if (e.target.closest('.lightbox-info') || e.target.closest('.lightbox-star-btn')) return;
+    if (e.target.closest('.lightbox-info') || e.target.closest('.lightbox-star-btn') || e.target.closest('.nav-btn')) return;
     document.getElementById("lightbox").style.display = "none";
 });
 
