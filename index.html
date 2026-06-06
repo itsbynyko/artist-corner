@@ -6,6 +6,36 @@
 <title>Artist Corner</title>
 <link rel="stylesheet" href="style.css">
 <style>
+  /* ESTADO POR DEFECTO: FONDO MORADO */
+  body {
+      background-color: #513159; /* El tono morado de tu diseño base */
+      transition: background-color 0.5s ease; /* Transición suave de 0.5 segundos */
+      margin: 0;
+  }
+
+  /* ESTADO AL ACTIVAR LA CASILLA: FADE A NEGRO / GRIS OSCURO */
+  body.nsfw-mode {
+      background-color: #121212; /* El gris oscuro/negro para el contenido de adultos */
+  }
+
+  /* ANIMACIÓN DE ENTRADA PARA LAS TARJETAS */
+  @keyframes fadeInCard {
+      0% {
+          opacity: 0;
+          transform: translateY(20px); /* Empieza 20px más abajo */
+      }
+      100% {
+          opacity: 1;
+          transform: translateY(0); /* Termina en su posición original */
+      }
+  }
+
+  /* REGLA PARA LAS TARJETAS DE PUBLICACIÓN */
+  .card {
+      opacity: 0; /* Empieza invisible antes de la animación */
+      animation: fadeInCard 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  }
+
   /* Un pequeño ajuste estético para alinear la casilla NSFW en la barra superior */
   .nsfw-control {
       display: flex;
@@ -23,6 +53,241 @@
       width: 16px;
       height: 16px;
   }
+
+  /* ESTILOS PARA LA INFORMACIÓN DEL LIGHTBOX */
+  .lightbox-info {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 15px 20px;
+      border-radius: 8px;
+      font-family: sans-serif;
+      max-width: 320px;
+      z-index: 110;
+      text-align: left;
+      border-left: 4px solid #e74c3c;
+  }
+  .lightbox-info .lb-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 4px;
+      color: #fff;
+  }
+  .lightbox-info .lb-author {
+      font-size: 14px;
+      color: #bbb;
+      margin-bottom: 8px;
+  }
+  
+  /* CONTENEDOR DE TAGS INTERACTIVOS */
+  .lightbox-info .lb-tags {
+      font-size: 12px;
+      color: #888;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 5px;
+  }
+  
+  /* ESTILO DE CADA TAG CLICABLE */
+  .lightbox-info .tag-badge {
+      background: #222;
+      color: #e74c3c;
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s, color 0.2s;
+      pointer-events: auto;
+  }
+  .lightbox-info .tag-badge:hover {
+      background: #e74c3c;
+      color: #fff;
+  }
+
+  /* NUEVOS ESTILOS PARA EL BOTÓN DE ESTRELLA CIRCULAR */
+  .star-btn {
+      background: #eeeeee; /* Fondo gris claro */
+      border: none;
+      color: #888888; /* Estrella gris apagada por defecto */
+      width: 36px;
+      height: 36px;
+      border-radius: 50%; /* Forma circular perfecta */
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s, color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      font-size: 18px;
+      user-select: none;
+      flex-shrink: 0; /* Evita que el círculo se deforme si el título es largo */
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  .star-btn:hover {
+      transform: scale(1.1);
+      background: #e5e5e5;
+      color: #f1c40f; /* Amarillo dorado al pasar el cursor */
+  }
+  .star-btn.starred {
+      background: #eeeeee; 
+      color: #f1c40f; /* Amarillo dorado cuando está marcado */
+      animation: popEffect 0.3s ease-in-out;
+  }
+
+  /* Contenedor fila para Título + Estrella en las tarjetas */
+  .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px; /* Espaciado generoso entre título y botón */
+      width: 100%;
+  }
+
+  /* Botón de Estrella específico para el Lightbox (Abajo a la derecha) */
+  .lightbox-star-btn {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      color: #555;
+      font-size: 26px;
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 110;
+      transition: transform 0.2s, color 0.2s;
+  }
+  .lightbox-star-btn:hover {
+      transform: scale(1.1);
+      color: #f1c40f;
+  }
+  .lightbox-star-btn.starred {
+      color: #f1c40f;
+  }
+
+  /* Animación de brinco al dar favorito */
+  @keyframes popEffect {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+  }
+
+  /* =======================================================
+     SOLUCIÓN MÓVIL SÚPER ENFOCADA (MÁX 768PX)
+     ======================================================= */
+  @media (max-width: 768px) {
+      body {
+          padding: 10px !important; /* Reduce el margen exterior del sitio */
+      }
+
+      /* 1. Reestructurar la Topbar */
+      .topbar {
+          flex-direction: column !important; /* Apila en vertical */
+          height: auto !important; /* Rompe los 70px fijos de tu style.css */
+          padding: 15px !important;
+          gap: 15px !important;
+      }
+
+      /* Fila 1: Todo lo que está a la izquierda (Logo + Menú) ocupará el 100% */
+      .left-section {
+          width: 100% !important;
+          justify-content: space-between !important; /* Separa logo a la izq y enlaces a la der */
+          gap: 10px !important;
+      }
+
+      /* Escalamos el logo para pantallas pequeñas */
+      .logo img {
+          width: 150px !important; /* Evita que aplaste el menú */
+          height: auto !important;
+      }
+
+      .menu {
+          gap: 15px !important; /* Espaciado más cerrado para "Inicio" y "Subir Arte" */
+      }
+
+      .menu a {
+          font-size: 14px !important;
+          white-space: nowrap !important; /* Impide que el texto quepa en 2 líneas */
+      }
+
+      /* Fila 2: El Buscador y el Filtro NSFW */
+      .search-box {
+          width: 100% !important; /* Toma todo el ancho disponible abajo del logo */
+          max-width: 100% !important; /* Rompe el max-width: 50% de PC */
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          gap: 10px !important;
+      }
+
+      .search-box input {
+          flex-grow: 1 !important; /* Hace que la barra de texto use todo el espacio libre */
+          width: auto !important;
+          padding: 10px 15px !important;
+          font-size: 14px !important;
+      }
+
+      .nsfw-control {
+          margin-left: 0 !important; /* Resetea el margen de PC */
+          flex-shrink: 0 !important; /* Impide que el input aplaste el texto "NSFW" */
+          white-space: nowrap !important;
+      }
+
+      /* 2. Ajustes del Feed */
+      .feed {
+          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important; /* Cuadrícula de 2 columnas estéticas */
+          gap: 10px !important;
+      }
+
+      .card .info {
+          padding: 10px !important;
+      }
+
+      .title {
+          font-size: 14px !important;
+      }
+
+      .author {
+          font-size: 12px !important;
+      }
+
+      .card .star-btn {
+          width: 30px !important;
+          height: 30px !important;
+          font-size: 14px !important;
+      }
+
+      /* 3. Ajustes de la interfaz del Lightbox */
+      .lightbox-info {
+          left: 10px !important;
+          bottom: 85px !important;
+          right: 10px !important;
+          max-width: none !important;
+          padding: 10px !important;
+      }
+
+      .lightbox-star-btn {
+          bottom: 15px !important;
+          right: 15px !important;
+          width: 45px !important;
+          height: 45px !important;
+          font-size: 20px !important;
+      }
+
+      .nav-btn {
+          width: 40px !important;
+          height: 55px !important;
+          font-size: 20px !important;
+      }
+  }
 </style>
 </head>
 <body>
@@ -38,11 +303,11 @@
         </nav>
     </div>
 
-    <div class="search-box" style="display: flex; align-items: center;">
+    <div class="search-box">
         <input
             type="text"
             id="searchInput"
-            placeholder="Buscar por título o autor...">
+            placeholder="Buscar por título, autor o tag...">
         
         <label class="nsfw-control">
             <input type="checkbox" id="nsfwToggle">
@@ -59,17 +324,23 @@
     <button class="nav-btn left" onclick="prevImage(event)">❮</button>
     <img id="lightboxImg">
     <button class="nav-btn right" onclick="nextImage(event)">❯</button>
+
+    <div class="lightbox-info" id="lightboxInfo">
+        <div class="lb-title" id="lbTitle">Título</div>
+        <div class="lb-author" id="lbAuthor">Autor</div>
+        <div class="lb-tags" id="lbTags"></div>
+    </div>
+
+    <button class="lightbox-star-btn" id="lightboxStarBtn" onclick="toggleLightboxStar(event)">★</button>
 </div>
 
 <script>
-// Tu URL activa de la Web App conectada a Google Apps Script
 const API_BASE = "https://script.google.com/macros/s/AKfycbzcwKYtpAnlFnZOSS7-jbQ2cDeiyZThmojE28E-YxmMnTaiegmmnnrmS_7q-NIX4l_q/exec";
 
-let imageList = [];
+let imageList = []; 
 let currentImageIndex = 0;
-let allPosts = []; // Guardamos una copia global de los posts para reconstruir el Lightbox al filtrar
+let allPosts = []; 
 
-// Carga el feed real desde la carpeta de Aprobados en tu Google Drive
 async function loadFeed() {
     const feed = document.getElementById("feed");
     
@@ -82,8 +353,6 @@ async function loadFeed() {
         if (!res.ok) throw new Error("Error al conectar con la base de datos de Drive");
         
         allPosts = await res.json();
-        
-        // Aplicamos el filtro inicial (ocultando NSFW por defecto)
         filterAndRender();
 
     } catch (err) {
@@ -92,60 +361,107 @@ async function loadFeed() {
     }
 }
 
-// FUNCIÓN DE FILTRADO Y RENDERIZADO COMPLETO
+function getStarredImages() {
+    const stars = localStorage.getItem("artist_corner_likes");
+    return stars ? JSON.parse(stars) : [];
+}
+
+function isImageStarred(fileId) {
+    return getStarredImages().includes(fileId);
+}
+
+function toggleStar(fileId) {
+    let starredImages = getStarredImages();
+    
+    if (starredImages.includes(fileId)) {
+        starredImages = starredImages.filter(id => id !== fileId); 
+    } else {
+        starredImages.push(fileId); 
+    }
+    
+    localStorage.setItem("artist_corner_likes", JSON.stringify(starredImages));
+}
+
 function filterAndRender() {
     const feed = document.getElementById("feed");
-    const search = document.getElementById("searchInput").value.toLowerCase();
-    const showNsfw = document.getElementById("nsfwToggle").checked;
+    const search = document.getElementById("searchInput").value.toLowerCase().trim();
+    const showNsfwOnly = document.getElementById("nsfwToggle").checked;
+
+    if (showNsfwOnly) {
+        document.body.classList.add("nsfw-mode");
+    } else {
+        document.body.classList.remove("nsfw-mode");
+    }
 
     feed.innerHTML = ""; 
-    imageList = []; // Limpiamos el orden del lightbox para que no muestre imágenes ocultas
+    imageList = []; 
 
     if (!allPosts || allPosts.length === 0) {
         feed.innerHTML = '<div style="text-align:center; color:#aaa; padding:50px; width:100%;">Aún no hay obras de arte aprobadas en la galería.</div>';
         return;
     }
 
+    let renderedCount = 0; 
+
     allPosts.forEach(post => {
-        // Analizamos si el post es NSFW (viendo si tiene la propiedad explícita o si viene en los tags)
         const tagsString = (post.tags || "").toLowerCase();
         const isPostNsfw = post.nsfw === true || tagsString.includes("nsfw");
 
-        // Regla 1: Si el post es NSFW y la casilla está desactivada, lo ignoramos por completo
-        if (isPostNsfw && !showNsfw) {
-            return;
+        if (showNsfwOnly) {
+            if (!isPostNsfw) return;
+        } else {
+            if (isPostNsfw) return;
         }
 
-        // Regla 2: Filtro de búsqueda por texto (Título o Autor)
-        const title = (post.title || "").toLowerCase();
-        const author = (post.author || "").toLowerCase();
-        if (search && !title.includes(search) && !author.includes(search)) {
-            return;
+        const title = post.title || "Sin título";
+        const author = post.author || "Anónimo";
+        const tags = post.tags || "";
+
+        if (search) {
+            const matchTitle = title.toLowerCase().includes(search);
+            const matchAuthor = author.toLowerCase().includes(search);
+            const matchTags = tags.toLowerCase().includes(search);
+            
+            if (!matchTitle && !matchAuthor && !matchTags) {
+                return;
+            }
         }
 
-        // Si pasa los filtros, se añade a la galería activa
         const imgUrl = `https://drive.google.com/thumbnail?id=${post.fileId}&sz=w1000`;
-        imageList.push(imgUrl);
+        
+        imageList.push({
+            id: post.fileId,
+            url: imgUrl,
+            title: title,
+            author: author,
+            tags: tags
+        });
 
         const card = document.createElement("div");
         card.className = "card";
-        
-        // Guardamos el estado en el elemento por si necesitas usarlo con CSS
         card.setAttribute("data-nsfw", isPostNsfw); 
+        
+        card.style.animationDelay = `${renderedCount * 0.05}s`;
+        renderedCount++;
+
+        const hasStar = isImageStarred(post.fileId);
 
         card.innerHTML = `
             <div class="video-container">
                 <img
                     src="${imgUrl}"
-                    alt="${post.title || 'Arte'}"
+                    alt="${title}"
                     onclick="openImage(${imageList.length - 1})">
             </div>
             <div class="info">
-                <div class="title">
-                    ${post.title || "Sin título"} 
-                    ${isPostNsfw ? '<span style="color:#e74c3c; font-size:10px; font-weight:bold; border:1px solid #e74c3c; padding:1px 3px; border-radius:3px; margin-left:5px;">18+</span>' : ''}
+                <div class="title-row">
+                    <div class="title" style="display:flex; align-items:center; flex-wrap:wrap; font-weight:bold;">
+                        ${title} 
+                        ${isPostNsfw ? '<span style="color:#e74c3c; font-size:10px; font-weight:bold; border:1px solid #e74c3c; padding:1px 3px; border-radius:3px; margin-left:5px;">18+</span>' : ''}
+                    </div>
+                    <button class="star-btn ${hasStar ? 'starred' : ''}" onclick="handleCardStar(event, '${post.fileId}', this)">★</button>
                 </div>
-                <div class="author">Por: ${post.author || "Anónimo"}</div>
+                <div class="author">Por: ${author}</div>
                 ${post.description ? `<div style="font-size:12px; color:#888; margin-top:5px;">${post.description}</div>` : ''}
             </div>
         `;
@@ -153,20 +469,81 @@ function filterAndRender() {
     });
 
     if (feed.children.length === 0) {
-        feed.innerHTML = '<div style="text-align:center; color:#aaa; padding:50px; width:100%;">No se encontraron resultados para la búsqueda actual.</div>';
+        feed.innerHTML = '<div style="text-align:center; color:#aaa; padding:50px; width:100%;">No se encontraron resultados para los filtros seleccionados.</div>';
     }
 }
 
-// Escuchadores de eventos para actualizar el feed al escribir o cambiar la casilla
+function handleCardStar(event, fileId, element) {
+    event.stopPropagation(); 
+    toggleStar(fileId);
+    element.classList.toggle("starred");
+}
+
+function filterByTag(tagName) {
+    document.getElementById("lightbox").style.display = "none";
+    const searchInput = document.getElementById("searchInput");
+    searchInput.value = tagName.trim();
+    searchInput.focus();
+    filterAndRender();
+}
+
 document.getElementById("searchInput").addEventListener("input", filterAndRender);
 document.getElementById("nsfwToggle").addEventListener("change", filterAndRender);
 
 /* ==========================================
-   MÓDULO DE LIGHTBOX (NAVEGACIÓN)
+   MÓDULO DE LIGHTBOX
 ========================================== */
+function updateLightboxContent(index) {
+    const imageData = imageList[index];
+    
+    document.getElementById("lightboxImg").src = imageData.url;
+    document.getElementById("lbTitle").textContent = imageData.title;
+    document.getElementById("lbAuthor").textContent = `Por: ${imageData.author}`;
+    
+    const lightboxStarBtn = document.getElementById("lightboxStarBtn");
+    if (isImageStarred(imageData.id)) {
+        lightboxStarBtn.classList.add("starred");
+    } else {
+        lightboxStarBtn.classList.remove("starred");
+    }
+
+    const tagsContainer = document.getElementById("lbTags");
+    tagsContainer.innerHTML = ""; 
+    
+    if (imageData.tags) {
+        const tagArray = imageData.tags.split(",");
+        tagArray.forEach(tag => {
+            const cleanTag = tag.trim();
+            if (cleanTag === "") return; 
+            
+            const tagSpan = document.createElement("span");
+            tagSpan.className = "tag-badge";
+            tagSpan.textContent = `#${cleanTag}`;
+            
+            tagSpan.onclick = function(event) {
+                event.stopPropagation();
+                filterByTag(cleanTag);
+            };
+            
+            tagsContainer.appendChild(tagSpan);
+        });
+    } else {
+        tagsContainer.textContent = "Sin etiquetas";
+    }
+}
+
+function toggleLightboxStar(event) {
+    event.stopPropagation();
+    const imageData = imageList[currentImageIndex];
+    toggleStar(imageData.id);
+    
+    updateLightboxContent(currentImageIndex);
+    filterAndRender(); 
+}
+
 function openImage(index){
     currentImageIndex = index;
-    document.getElementById("lightboxImg").src = imageList[index];
+    updateLightboxContent(index);
     document.getElementById("lightbox").style.display = "flex";
 }
 
@@ -174,17 +551,18 @@ function nextImage(event){
     event.stopPropagation();
     if (imageList.length === 0) return;
     currentImageIndex = (currentImageIndex + 1) % imageList.length;
-    document.getElementById("lightboxImg").src = imageList[currentImageIndex];
+    updateLightboxContent(currentImageIndex);
 }
 
 function prevImage(event){
     event.stopPropagation();
     if (imageList.length === 0) return;
     currentImageIndex = (currentImageIndex - 1 + imageList.length) % imageList.length;
-    document.getElementById("lightboxImg").src = imageList[currentImageIndex];
+    updateLightboxContent(currentImageIndex);
 }
 
-document.getElementById("lightbox").addEventListener("click", () => {
+document.getElementById("lightbox").addEventListener("click", (e) => {
+    if (e.target.closest('.lightbox-info') || e.target.closest('.lightbox-star-btn')) return;
     document.getElementById("lightbox").style.display = "none";
 });
 
@@ -197,7 +575,6 @@ document.addEventListener("keydown", e => {
     if (e.key === "Escape") lightbox.style.display = "none";
 });
 
-// Inicialización automática
 loadFeed();
 </script>
 
