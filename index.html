@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Artist Corner</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* Un pequeño ajuste estético para alinear la casilla NSFW en la barra superior */
+  .nsfw-control {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #fff;
+      font-family: sans-serif;
+      font-size: 14px;
+      user-select: none;
+      cursor: pointer;
+      margin-left: 15px;
+  }
+  .nsfw-control input {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="left-section">
+        <div class="logo">
+            <img src="ArtistCornerLogo.png" alt="Logo">
+        </div>
+        <nav class="menu">
+            <a href="index.html">Inicio</a>
+            <a href="upload.html">Subir Arte</a>
+        </nav>
+    </div>
+
+    <div class="search-box" style="display: flex; align-items: center;">
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Buscar por título o autor...">
+        
+        <label class="nsfw-control">
+            <input type="checkbox" id="nsfwToggle">
+            <span>NSFW</span>
+        </label>
+    </div>
+</header>
+
+<div class="feed" id="feed">
+    <div style="text-align: center; color: #aaa; padding: 50px; width: 100%;">Cargando galería de arte...</div>
+</div>
+
+<div class="lightbox" id="lightbox">
+    <button class="nav-btn left" onclick="prevImage(event)">❮</button>
+    <img id="lightboxImg">
+    <button class="nav-btn right" onclick="nextImage(event)">❯</button>
+</div>
+
+<script>
+// Tu URL activa de la Web App conectada a Google Apps Script
+const API_BASE = "https://script.google.com/macros/s/AKfycbzcwKYtpAnlFnZOSS7-jbQ2cDeiyZThmojE28E-YxmMnTaiegmmnnrmS_7q-NIX4l_q/exec";
+
+let imageList = [];
+let currentImageIndex = 0;
+let allPosts = []; // Guardamos una copia global de los posts para reconstruir el Lightbox al filtrar
+
+// Carga el feed real desde la carpeta de Aprobados en tu Google Drive
+async function loadFeed() {
+    const feed = document.getElementById("feed");
+    
+    try {
+        const res = await fetch(`${API_BASE}?action=list`, {
+            method: "GET",
+            redirect: "follow"
+        });
+        
+        if (!res.ok) throw new Error("Error al conectar con la base de datos de Drive");
+        
+        allPosts = await res.json();
+        
+        // Aplicamos el filtro inicial (ocultando NSFW por defecto)
+        filterAndRender();
+
+    } catch (err) {
+        console.error("Error al cargar el feed:", err);
+        feed.innerHTML = '<div style="text-align:center; color:#e74c3c; padding:50px; width:100%;">Error al conectar con la galería de Artist Corner.</div>';
+    }
+}
+
+// FUNCIÓN DE FILTRADO Y RENDERIZADO COMPLETO
+function filterAndRender() {
+    const feed = document.getElementById("feed");
+    const search = document.getElementById("searchInput").value.toLowerCase();
+    const showNsfw = document.getElementById("nsfwToggle").checked;
+
+    feed.innerHTML = ""; 
+    imageList = []; // Limpiamos el orden del lightbox para que no muestre imágenes ocultas
+
+    if (!allPosts || allPosts.length === 0) {
+        feed.innerHTML = '<div style="text-align:center; color:#aaa; padding:50px; width:100%;">Aún no hay obras de arte aprobadas en la galería.</div>';
+        return;
+    }
+
+    allPosts.forEach(post => {
+        // Analizamos si el post es NSFW (viendo si tiene la propiedad explícita o si viene en los tags)
+        const tagsString = (post.tags || "").toLowerCase();
+        const isPostNsfw = post.nsfw === true || tagsString.includes("nsfw");
+
+        // Regla 1: Si el post es NSFW y la casilla está desactivada, lo ignoramos por completo
+        if (isPostNsfw && !showNsfw) {
+            return;
+        }
+
+        // Regla 2: Filtro de búsqueda por texto (Título o Autor)
+        const title = (post.title || "").toLowerCase();
+        const author = (post.author || "").toLowerCase();
+        if (search && !title.includes(search) && !author.includes(search)) {
+            return;
+        }
+
+        // Si pasa los filtros, se añade a la galería activa
+        const imgUrl = `https://drive.google.com/thumbnail?id=${post.fileId}&sz=w1000`;
+        imageList.push(imgUrl);
+
+        const card = document.createElement("div");
+        card.className = "card";
+        
+        // Guardamos el estado en el elemento por si necesitas usarlo con CSS
+        card.setAttribute("data-nsfw", isPostNsfw); 
+
+        card.innerHTML = `
+            <div class="video-container">
+                <img
+                    src="${imgUrl}"
+                    alt="${post.title || 'Arte'}"
+                    onclick="openImage(${imageList.length - 1})">
+            </div>
+            <div class="info">
+                <div class="title">
+                    ${post.title || "Sin título"} 
+                    ${isPostNsfw ? '<span style="color:#e74c3c; font-size:10px; font-weight:bold; border:1px solid #e74c3c; padding:1px 3px; border-radius:3px; margin-left:5px;">18+</span>' : ''}
+                </div>
+                <div class="author">Por: ${post.author || "Anónimo"}</div>
+                ${post.description ? `<div style="font-size:12px; color:#888; margin-top:5px;">${post.description}</div>` : ''}
+            </div>
+        `;
+        feed.appendChild(card);
+    });
+
+    if (feed.children.length === 0) {
+        feed.innerHTML = '<div style="text-align:center; color:#aaa; padding:50px; width:100%;">No se encontraron resultados para la búsqueda actual.</div>';
+    }
+}
+
+// Escuchadores de eventos para actualizar el feed al escribir o cambiar la casilla
+document.getElementById("searchInput").addEventListener("input", filterAndRender);
+document.getElementById("nsfwToggle").addEventListener("change", filterAndRender);
+
+/* ==========================================
+   MÓDULO DE LIGHTBOX (NAVEGACIÓN)
+========================================== */
+function openImage(index){
+    currentImageIndex = index;
+    document.getElementById("lightboxImg").src = imageList[index];
+    document.getElementById("lightbox").style.display = "flex";
+}
+
+function nextImage(event){
+    event.stopPropagation();
+    if (imageList.length === 0) return;
+    currentImageIndex = (currentImageIndex + 1) % imageList.length;
+    document.getElementById("lightboxImg").src = imageList[currentImageIndex];
+}
+
+function prevImage(event){
+    event.stopPropagation();
+    if (imageList.length === 0) return;
+    currentImageIndex = (currentImageIndex - 1 + imageList.length) % imageList.length;
+    document.getElementById("lightboxImg").src = imageList[currentImageIndex];
+}
+
+document.getElementById("lightbox").addEventListener("click", () => {
+    document.getElementById("lightbox").style.display = "none";
+});
+
+document.addEventListener("keydown", e => {
+    const lightbox = document.getElementById("lightbox");
+    if (lightbox.style.display !== "flex") return;
+
+    if (e.key === "ArrowRight") nextImage(e);
+    if (e.key === "ArrowLeft") prevImage(e);
+    if (e.key === "Escape") lightbox.style.display = "none";
+});
+
+// Inicialización automática
+loadFeed();
+</script>
+
+</body>
+</html>

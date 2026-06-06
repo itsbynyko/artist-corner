@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Artist Corner</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#1a1a1a;
+    color:white;
+    padding:20px;
+}
+
+h1{
+    margin-bottom:20px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+    gap:15px;
+}
+
+.card{
+    background:#2a2a2a;
+    border-radius:12px;
+    overflow:hidden;
+}
+
+.card img{
+    width:100%;
+    height:220px;
+    object-fit:cover;
+    background:#000;
+}
+
+.content{
+    padding:10px;
+}
+
+.title{
+    font-weight:bold;
+    font-size:16px;
+}
+
+.small{
+    color:#aaa;
+    font-size:13px;
+}
+
+.buttons{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+
+button{
+    flex:1;
+    padding:10px;
+    border:none;
+    cursor:pointer;
+    border-radius:8px;
+    font-weight:bold;
+}
+
+.approve{
+    background:#2ecc71;
+    color: white;
+}
+
+.reject{
+    background:#e74c3c;
+    color: white;
+}
+
+button:disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+}
+
+.loading-text {
+    font-size: 18px;
+    color: #aaa;
+}
+</style>
+</head>
+<body>
+
+<h1>Panel de Administración</h1>
+
+<div class="grid" id="grid">
+    <div class="loading-text">Cargando elementos...</div>
+</div>
+
+<script>
+// Tu URL actual activa de la Web App
+const API_BASE = "https://script.google.com/macros/s/AKfycbwwSBIrzs2mjfC063TX8UkRJD7TnaL7smpDxAJqv0Z-7wzQ0RUyDw9keekrE5LH50bC/exec";
+
+// Función global encargada de recibir la respuesta exitosa desde el servidor de Google (para ambas acciones)
+function miCallbackCORS(data) {
+    if (data && data.success) {
+        console.log("Operación realizada con éxito en Drive para el ID: ", data.id);
+        // Refrescamos inmediatamente el tablero visual para quitar la tarjeta procesada
+        load();
+    }
+}
+
+// Carga los elementos usando Fetch directo manejando el redireccionamiento de Google
+async function load(){
+    const grid = document.getElementById("grid");
+    grid.innerHTML = '<div class="loading-text">Cargando elementos...</div>';
+    
+    try {
+        const res = await fetch(API_BASE + "?action=list", {
+            method: "GET",
+            redirect: "follow"
+        });
+        
+        if (!res.ok) throw new Error("Error al obtener datos");
+        
+        const data = await res.json();
+        grid.innerHTML = "";
+
+        if(!data || data.length === 0) {
+            grid.innerHTML = '<div class="loading-text">No hay imágenes pendientes.</div>';
+            return;
+        }
+
+        data.forEach(item => {
+            const card = document.createElement("div");
+            card.className = "card";
+            const imgUrl = `https://drive.google.com/thumbnail?id=${item.fileId}&sz=w1000`;
+
+            card.innerHTML = `
+                <img src="${imgUrl}" alt="Preview">
+                <div class="content">
+                    <div class="title">${item.title || "Sin título"}</div>
+                    <div class="small"><b>Autor:</b> ${item.author || "Anónimo"}</div>
+                    <div class="small"><b>Tags:</b> ${item.tags || "Ninguno"}</div>
+                    <div class="small">${item.description || "Sin descripción"}</div>
+                    <div class="buttons">
+                        <button class="approve" onclick="approve('${item.fileId}', this)">Aprobar</button>
+                        <button class="reject" onclick="reject('${item.fileId}', this)">Rechazar</button>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+    } catch (err) {
+        console.error("Error al cargar los datos:", err);
+        grid.innerHTML = `<div class="loading-text" style="color:#e74c3c;">Error al obtener la lista desde Drive.</div>`;
+    }
+}
+
+// Envía la orden para APROBAR y mover la imagen a la otra carpeta vía JSONP
+function approve(id, btn){
+    if(!confirm("¿Deseas aprobar esta imagen y moverla a la carpeta de aprobados?")) return;
+
+    btn.disabled = true;
+    btn.textContent = "Aprobando...";
+
+    // Limpieza de scripts previos para no saturar el DOM
+    const antiguo = document.getElementById("jsonp-action-script");
+    if (antiguo) antiguo.remove();
+
+    // Creamos la etiqueta <script> para mandar la acción "approve" sin bloqueos de CORS
+    const script = document.createElement("script");
+    script.id = "jsonp-action-script";
+    script.src = `${API_BASE}?action=approve&id=${encodeURIComponent(id)}&callback=miCallbackCORS&_=${Date.now()}`;
+    
+    script.onerror = () => {
+        alert("Ocurrió un error de red al intentar aprobar el archivo.");
+        btn.disabled = false;
+        btn.textContent = "Aprobar";
+        script.remove();
+    };
+
+    script.onload = () => script.remove();
+    document.body.appendChild(script);
+}
+
+// Envía la orden de eliminación real de los dos archivos (Mantiene tu lógica ganadora)
+function reject(id, btn){
+    if(!confirm("¿Estás seguro de que deseas eliminar este archivo de forma permanente?")) return;
+
+    btn.disabled = true;
+    btn.textContent = "Eliminando...";
+
+    const antiguo = document.getElementById("jsonp-action-script");
+    if (antiguo) antiguo.remove();
+
+    const script = document.createElement("script");
+    script.id = "jsonp-action-script";
+    script.src = `${API_BASE}?action=reject&id=${encodeURIComponent(id)}&callback=miCallbackCORS&_=${Date.now()}`;
+    
+    script.onerror = () => {
+        alert("Ocurrió un error de red al intentar comunicarse con Drive.");
+        btn.disabled = false;
+        btn.textContent = "Rechazar";
+        script.remove();
+    };
+
+    script.onload = () => script.remove();
+    document.body.appendChild(script);
+}
+
+// Inicialización de la cola
+load();
+</script>
+
+</body>
+</html>
