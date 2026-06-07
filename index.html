@@ -421,7 +421,19 @@ function filterAndRender() {
             }
         }
 
-        const imgUrl = `https://drive.google.com/thumbnail?id=${post.fileId}&sz=w1000`;
+        // --- DETECCIÓN Y SOPORTE PARA GIFS ---
+        const isGif = (post.mimeType && post.mimeType.includes("image/gif")) || 
+                      (post.filename && post.filename.toLowerCase().endsWith(".gif")) ||
+                      tagsString.includes("gif");
+
+        let imgUrl;
+        if (isGif) {
+            // Si es un GIF, usamos el enlace de visualización directa uc?export=view para mantener la animación activa
+            imgUrl = `https://drive.google.com/uc?export=view&id=${post.fileId}`;
+        } else {
+            // Si es imagen normal, seguimos usando la compresión miniatura de Drive
+            imgUrl = `https://drive.google.com/thumbnail?id=${post.fileId}&sz=w1000`;
+        }
         
         imageList.push({
             id: post.fileId,
@@ -445,6 +457,7 @@ function filterAndRender() {
                 <img
                     src="${imgUrl}"
                     alt="${title}"
+                    loading="lazy"
                     onclick="openImage(${imageList.length - 1})">
             </div>
             <div class="info">
@@ -504,6 +517,7 @@ function updateLightboxContent(index) {
             if (cleanTag === "") return; 
             
             const tagSpan = document.createElement("span");
+            const cleanTagLower = cleanTag.toLowerCase();
             tagSpan.className = "tag-badge";
             tagSpan.textContent = `#${cleanTag}`;
             
