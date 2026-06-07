@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reglas de la Comunidad - Artist Corner</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* ESTADO POR DEFECTO: FONDO MORADO EXACTO DEL INDEX */
+  body {
+      background-color: #513159; 
+      transition: background-color 0.5s ease; 
+      margin: 0;
+      font-family: sans-serif;
+      color: #fff;
+  }
+
+  /* CONTENEDOR PRINCIPAL */
+  .info-container {
+      max-width: 850px;
+      margin: 40px auto;
+      padding: 0 20px;
+      box-sizing: border-box;
+  }
+
+  .info-card {
+      background: rgba(20, 20, 20, 0.5);
+      border-radius: 12px;
+      padding: 35px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  .info-card h1 {
+      font-size: 30px;
+      margin-top: 0;
+      padding-bottom: 10px;
+      color: #fff;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .info-card h2 {
+      font-size: 22px;
+      color: #f1c40f;
+      margin-top: 35px;
+      margin-bottom: 15px;
+  }
+
+  .info-card h3 {
+      font-size: 16px;
+      color: #e74c3c;
+      margin-top: 25px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-left: 3px solid #e74c3c;
+      padding-left: 10px;
+  }
+
+  .info-card p {
+      line-height: 1.6;
+      color: #ddd;
+  }
+
+  /* Bloques de Reglas */
+  .rules-block {
+      padding-left: 5px;
+      margin-bottom: 25px;
+  }
+
+  .rules-category {
+      font-weight: bold;
+      color: #fff;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+  }
+
+  .rules-block ul {
+      margin: 8px 0 0 0;
+      padding-left: 20px;
+      color: #ccc;
+  }
+
+  .rules-block li {
+      margin-bottom: 8px;
+      line-height: 1.5;
+  }
+
+  /* Lista de Contenido Prohibido */
+  .prohibited-list {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0;
+      background: rgba(231, 76, 60, 0.05);
+      border: 1px solid rgba(231, 76, 60, 0.2);
+      border-radius: 8px;
+      padding: 10px 15px;
+  }
+
+  .prohibited-list li {
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(231, 76, 60, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+  }
+
+  .prohibited-list li:last-child {
+      border-bottom: none;
+  }
+
+  .prohibited-list strong {
+      color: #ff6b6b;
+      font-size: 15px;
+  }
+
+  .prohibited-list span.desc {
+      color: #cbcbcb;
+      font-size: 13.5px;
+      line-height: 1.4;
+  }
+
+  /* Nota de advertencia destacada */
+  .warning-box {
+      background: rgba(241, 196, 15, 0.1);
+      border-left: 4px solid #f1c40f;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+  }
+  .warning-box p {
+      margin: 0;
+      color: #f39c12;
+      font-weight: bold;
+      font-size: 14.5px;
+  }
+
+  /* =======================================================
+      ADAPTACIÓN MÓVIL OPTIMIZADA
+      ======================================================= */
+  @media (max-width: 768px) {
+      body {
+          padding: 10px !important; 
+      }
+
+      .topbar {
+          flex-direction: column !important; 
+          height: auto !important; 
+          padding: 15px !important;
+          gap: 15px !important;
+      }
+
+      .left-section {
+          width: 100% !important;
+          justify-content: space-between !important; 
+          gap: 10px !important;
+      }
+
+      .logo img {
+          width: 150px !important; 
+          height: auto !important;
+      }
+
+      .menu {
+          gap: 15px !important; 
+      }
+
+      .menu a {
+          font-size: 14px !important;
+          white-space: nowrap !important; 
+      }
+
+      .info-container {
+          margin: 15px auto !important;
+          padding: 0 !important;
+      }
+      .info-card {
+          padding: 20px !important;
+      }
+      .info-card h1 {
+          font-size: 24px !important;
+      }
+      .info-card h2 {
+          font-size: 18px !important;
+      }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="left-section">
+        <div class="logo">
+            <img src="ArtistCornerLogo.png" alt="Logo">
+        </div>
+        <nav class="menu">
+            <a href="index.html">Inicio</a>
+        </nav>
+    </div>
+</header>
+
+<main class="info-container">
+    <div class="info-card">
+        <h1>Reglas de Envío y Convivencia</h1>
+        <p>Bienvenido al reglamento oficial de <strong>Artist Corner</strong>. Para asegurar que la plataforma mantenga un estándar de calidad y siga siendo un rincón seguro y libre de hosting problemático, implementamos un filtro de revisión manual estricto. Lee con atención lo que está permitido y lo que será NEGADO inmediatamente por moderación.</p>
+
+        <div class="warning-box">
+            <p>⚠️ NOTA PARA LOS EMISORES: Al subir un archivo, aceptas que el contenido se ajusta a estas normas. Intentar saltarse los filtros usando tags falsos o descripciones engañosas provocará el bloqueo permanente de tu dirección IP.</p>
+        </div>
+
+        <h2>1. Lineamientos de Conducta y Formato</h2>
+        
+        <div class="rules-block">
+            <div class="rules-category">A. No se tolera el Plagio o Robo de Arte</div>
+            <ul>
+                <li><strong>Ilustraciones Propias:</strong> Sube únicamente contenido creado por ti. No se permite descargar obras de Pixiv, Twitter o DeviantArt pertenecientes a terceros para republicarlas aquí.</li>
+                <li><strong>Uso de Pseudónimos:</strong> Coloca tu nombre artístico real en el casillero de Autor. Las cuentas que suplanten a artistas conocidos serán añadidas a la lista negra.</li>
+            </ul>
+        </div>
+
+        <div class="rules-block">
+            <div class="rules-category">B. Restricciones Técnicas Absolutas</div>
+            <ul>
+                <li><strong>Cero Contenido de Inteligencia Artificial (AI):</strong> La plataforma está dedicada exclusivamente al esfuerzo e inspiración humana. Quedan prohibidas las imágenes generadas por Midjourney, Stable Diffusion, NovelAI o equivalentes.</li>
+                <li><strong>Formato Limpio:</strong> No subas capturas de pantalla de baja calidad, memes con texto comprimido, edits de fotos reales o bocetos en papel arrugado tomados con una cámara oscura. Queremos ver tu arte digital o tradicional digitalizado en condiciones óptimas.</li>
+            </ul>
+        </div>
+
+        <h2>2. Directrices de Clasificación y Tags</h2>
+        <div class="rules-block">
+            <ul>
+                <li><strong>Marcado Obligatorio de NSFW:</strong> Si tu dibujo incluye desnudez explícita, lencería muy sugerente, situaciones eróticas explícitas o poses lascivas directas, **debes** activar la casilla NSFW en el formulario. Mantengamos el feed limpio para quienes navegan en público.</li>
+                <li><strong>Saturación de Tags:</strong> Coloca solo palabras clave descriptivas reales del dibujo (ej. <code>#oc, #fantasy, #digital</code>). El uso de etiquetas masivas sin relación para ganar visibilidad provocará el rechazo del post.</li>
+            </ul>
+        </div>
+
+        <h2>3. Enciclopedia de Contenido y Fetiches Prohibidos</h2>
+        <p>Para evitar problemas, cuidar el espacio de almacenamiento y mantener la armonía comunitaria, se rechazarán de manera fulminante las obras con los siguientes fetiches, temáticas o enfoques visuales:</p>
+
+        <h3>🚨 Categoría A: Absolutos Legales (Baneo Inmediato)</h3>
+        <ul class="prohibited-list">
+            <li>
+                <strong>Contenido de Menores o Aspecto Infantil (Lolicon / Shotacon / Cub)</strong>
+                <span class="desc">Tolerancia cero absoluta. Está estrictamente prohibido cualquier contenido erótico, sugerente o desnudez que involucre personajes menores de edad, de escuelas primarias/secundarias o diseños con rasgos explícitamente infantiles, sin importar que se argumente que son "ficticios" o "seres milenarios".</span>
+            </li>
+            <li>
+                <strong>Zoofilia y Feral Sexual (Bestialismo)</strong>
+                <span class="desc">Aunque se admite el arte Anthro / Furry (personajes antropomórficos con rasgos animales caminando en dos pies), está prohibido el contenido sexual explícito que involucre animales reales, cuadrúpedos o fetiches con fisonomías animales puras (Feral).</span>
+            </li>
+        </ul>
+
+        <h3>🩸 Categoría B: Violencia Grotesca y Gore</h3>
+        <ul class="prohibited-list">
+            <li>
+                <strong>Gore Extremo, Mutilación y Tortura (Guore / Snuff Art)</strong>
+                <span class="desc">No se permiten ilustraciones detalladas de desmembramientos, vísceras expuestas, decapitación, desollamiento o deformaciones violentas de cuerpos humanos o humanoides. El arte oscuro o de terror está permitido siempre y cuando no caiga en el morbo explícito y anatómico de la tortura.</span>
+            </li>
+            <li>
+                <strong>Necrofilia</strong>
+                <span class="desc">Cualquier tipo de interacción romántica, erótica o sexualizada con cadáveres o personajes en estados avanzados de descomposición biológica queda completamente vetada.</span>
+            </li>
+        </ul>
+
+        <h3>🤢 Categoría C: Fetiches Escatológicos y Médicos</h3>
+        <ul class="prohibited-list">
+            <li>
+                <strong>Escatología (Scat / Coprofilia / Vomit Art / Emetofilia)</strong>
+                <span class="desc">Está estrictamente prohibido cualquier dibujo, cómic o animación enfocado en la defecación, manipulación o consumo de heces, así como representaciones gráficas de vómito.</span>
+            </li>
+            <li>
+                <strong>Lluvia Dorada / Deportes Acuáticos (Watersports / Urofília)</strong>
+                <span class="desc">No se aceptarán ilustraciones explícitas enfocadas en personajes orinando, siendo bañados en orina o consumiendo la misma.</span>
+            </li>
+            <li>
+                <strong>Fetiches Médicos Extremos (Medical Infiltration / Infrecuentes)</strong>
+                <span class="desc">No se permite arte enfocado en inserciones de sondas, agujas quirúrgicas realistas traspasando órganos genitales, canulación dolorosa o procedimientos médicos invasivos con tintes eróticos.</span>
+            </li>
+        </ul>
+
+        <h3>🌀 Categoría D: Modificaciones Anatómicas y Fetiches de Degradación</h3>
+        <ul class="prohibited-list">
+            <li>
+                <strong>Vore Rígido, Digestión Cruda o Canibalismo (Hard Vore)</strong>
+                <span class="desc">El "Soft Vore" (tragado entero sin daño gráfico) se evalúa de forma moderada si es caricaturesco. Sin embargo, el "Hard Vore" que involucre masticación, desgarro de extremidades, jugos gástricos destruyendo cuerpos de forma realista o canibalismo explícito queda prohibido.</span>
+            </li>
+            <li>
+                <strong>Hipertrofia / Deformación Extrema (Hyper Fetiche)</strong>
+                <span class="desc">No se aceptará arte con proporciones grotescas e imposibles destinadas a la deformación del cuerpo, tales como inflación corporal extrema hasta el punto de ruptura, expansión de órganos gigantescos que rompan la coherencia anatómica básica o distorsiones masivas de la fisonomía.</span>
+            </li>
+            <li>
+                <strong>Embarazo Extremo o Desmedido (Extreme Impregnation)</strong>
+                <span class="desc">Se prohíbe el contenido erótico enfocado en vientres exagerados de proporciones monstruosas o caricaturizaciones lascivas de la gestación que resulten visualmente insostenibles o perturbadoras.</span>
+            </li>
+            <li>
+                <strong>Mind Break Realista / Crueldad Psicológica Extrema</strong>
+                <span class="desc">Aunque los tropos de ficción erótica existen, no aprobamos obras que hagan apología gráfica o glorificación explícita de abusos psicológicos crueles, torturas mentales realistas o expresiones de trauma severo no simulado.</span>
+            </li>
+        </ul>
+
+        <h2>¿Qué pasa si mi envío es rechazado?</h2>
+        <p>Si la administración rechaza tu obra por violar alguna de las normas de las **Categorías B, C o D**, el archivo sera negado y eliminado. Si envías material de la **Categoría A**, los administradores procederán directamente a banear tus credenciales de red del sistema de subidas de Artist Corner sin previo aviso.</p>
+    </div>
+</main>
+
+</body>
+</html>
