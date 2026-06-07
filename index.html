@@ -161,8 +161,8 @@
   }
 
   /* =======================================================
-     SOLUCIÓN MÓVIL DISPOSITIVOS (MAX 768PX)
-     ======================================================= */
+      SOLUCIÓN MÓVIL DISPOSITIVOS (MAX 768PX)
+      ======================================================= */
   @media (max-width: 768px) {
       body {
           padding: 10px !important; 
@@ -241,8 +241,8 @@
       }
 
       /* ==========================================
-         CORRECCIÓN DEL LIGHTBOX EN TELÉFONOS
-         ========================================== */
+          CORRECCIÓN DEL LIGHTBOX EN TELÉFONOS
+          ========================================== */
       .lightbox {
           flex-direction: column !important; 
           justify-content: flex-start !important; 
@@ -295,8 +295,10 @@
         </div>
         <nav class="menu">
             <a href="index.html">Inicio</a>
+            <a href="rules.html">Reglas</a>
             <a href="upload.html">Subir Arte</a>
-            </nav>
+            <a href="info.html">Información</a>
+        </nav>
     </div>
 
     <div class="search-box">
@@ -428,10 +430,8 @@ function filterAndRender() {
 
         let imgUrl;
         if (isGif) {
-            // Si es un GIF, usamos el enlace de visualización directa uc?export=view para mantener la animación activa
             imgUrl = `https://drive.google.com/uc?export=view&id=${post.fileId}`;
         } else {
-            // Si es imagen normal, seguimos usando la compresión miniatura de Drive
             imgUrl = `https://drive.google.com/thumbnail?id=${post.fileId}&sz=w1000`;
         }
         
@@ -517,7 +517,6 @@ function updateLightboxContent(index) {
             if (cleanTag === "") return; 
             
             const tagSpan = document.createElement("span");
-            const cleanTagLower = cleanTag.toLowerCase();
             tagSpan.className = "tag-badge";
             tagSpan.textContent = `#${cleanTag}`;
             
