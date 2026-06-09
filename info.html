@@ -179,7 +179,8 @@
       }
 
       .menu {
-          gap: 15px !important; 
+          gap: 12px !important; 
+          flex-wrap: wrap !important;
       }
 
       .menu a {
@@ -225,7 +226,11 @@
         </div>
         <nav class="menu">
             <a href="index.html">Inicio</a>
-            <a href="rules.html" style="font-weight: bold; color: #fff;">Reglas</a>
+            <a href="rules.html">Reglas</a>
+            <a href="upload.html">Subir Arte</a>
+            <a href="info.html" style="font-weight: bold; color: #fff;">Información</a>
+            <a href="https://discord.gg/gg3N2hKKvD" target="_blank">Discord</a>
+            <a href="https://ko-fi.com/itsbynyko" target="_blank">Donar</a>
         </nav>
     </div>
 </header>
@@ -250,9 +255,20 @@
             <p>Bienvenido a la bitácora oficial de la plataforma. Aquí podrás revisar las últimas novedades, parches aplicados, agradecimientos especiales y el estado general del desarrollo del sitio.</p>
 
             <h2>Historial de Actualizaciones</h2>
+
+            <div class="update-log">
+                <div class="update-version">Versión 1.5.0 (Actual)</div>
+                <div class="update-date">9 de Junio, 2026</div>
+                <ul>
+                    <li><strong>Rediseño Asíncrono Híbrido:</strong> Implementación de caché local (`localStorage`) que reduce los tiempos de carga en visitas recurrentes a menos de 0.1 segundos, eliminando las pantallas en blanco.</li>
+                    <li><strong>Pre-carga Inteligente (Precaching):</strong> El Lightbox ahora descarga de forma invisible la siguiente ilustración en segundo plano para una navegación instantánea y fluida.</li>
+                    <li><strong>Solución de Bug Visual:</strong> Se corrigió el error por el cual la imagen anterior se quedaba congelada durante las transiciones de carga en el visor a pantalla completa.</li>
+                    <li><strong>Ajustes Estéticos:</strong> Unificación de la paleta de colores del feed, el spinner de carga y el botón "Ver más obras" a tonos morados integrados con la interfaz del sitio.</li>
+                </ul>
+            </div>
             
             <div class="update-log">
-                <div class="update-version">Versión 1.3.0 (Actual)</div>
+                <div class="update-version">Versión 1.3.0</div>
                 <div class="update-date">7 de Junio, 2026</div>
                 <ul>
                     <li>Implementación oficial de la sección de **Reglas** y el panel de **Información** en la navegación.</li>
