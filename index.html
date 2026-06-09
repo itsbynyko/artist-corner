@@ -33,7 +33,7 @@
   /* REGLA PARA LAS TARJETAS DE PUBLICACIÓN */
   .card {
       opacity: 0; 
-      animation: fadeInCard 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      animation: fadeInCard 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   }
 
   .nsfw-control {
@@ -66,7 +66,7 @@
       max-width: 320px;
       z-index: 10005;
       text-align: left;
-      border-left: 4px solid #e74c3c;
+      border-left: 4px solid #8e44ad; /* Cambio a detalle morado */
   }
   .lightbox-info .lb-title {
       font-size: 18px;
@@ -91,7 +91,7 @@
   
   .lightbox-info .tag-badge {
       background: #222;
-      color: #e74c3c;
+      color: #a29bfe; /* Tag color morado claro */
       padding: 2px 8px;
       border-radius: 4px;
       cursor: pointer;
@@ -100,7 +100,7 @@
       pointer-events: auto;
   }
   .lightbox-info .tag-badge:hover {
-      background: #e74c3c;
+      background: #8e44ad;
       color: #fff;
   }
 
@@ -148,7 +148,6 @@
       100% { transform: scale(1); }
   }
 
-  /* Modificación del Lightbox base para soportar scroll vertical en móviles si es necesario */
   .lightbox {
       display: none;
       position: fixed;
@@ -158,6 +157,47 @@
       align-items: center;
       z-index: 9999;
       overflow-y: auto; 
+  }
+
+  /* BOTÓN DE CARGA INFERIOR - ¡AHORA MORADITO! */
+  .load-more-container {
+      text-align: center;
+      padding: 25px 0;
+      width: 100%;
+      clear: both;
+  }
+  .load-btn {
+      background: #8e44ad; /* Morado base */
+      color: white;
+      border: none;
+      padding: 12px 35px;
+      font-size: 15px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
+      transition: background 0.2s, transform 0.1s;
+  }
+  .load-btn:hover {
+      background: #732d91; /* Morado más oscuro al pasar el mouse */
+  }
+  .load-btn:active {
+      transform: scale(0.98); /* Efecto sutil de hundimiento al clickear */
+  }
+
+  /* SPINNER ANIMADO PARA EL FEED Y EL LIGHTBOX */
+  .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border-left-color: #8e44ad; /* Spinner morado también */
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+  }
+  @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
   }
 
   /* =======================================================
@@ -187,7 +227,7 @@
       }
 
       .menu {
-          gap: 12px !important; /* Ajuste sutil para que quepan todos los enlaces */
+          gap: 12px !important; 
           flex-wrap: wrap !important;
       }
 
@@ -241,9 +281,6 @@
           font-size: 14px !important;
       }
 
-      /* ==========================================
-          CORRECCIÓN DEL LIGHTBOX EN TELÉFONOS
-          ========================================== */
       .lightbox {
           flex-direction: column !important; 
           justify-content: flex-start !important; 
@@ -268,7 +305,7 @@
           margin: 0 auto auto auto !important; 
           background: #1a1a1a !important; 
           box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
-          border-left: 4px solid #e74c3c !important;
+          border-left: 4px solid #8e44ad !important;
           padding: 15px !important;
           box-sizing: border-box !important;
       }
@@ -318,7 +355,14 @@
 </header>
 
 <div class="feed" id="feed">
-    <div style="text-align: center; color: #aaa; padding: 50px; width: 100%;">Cargando galería de arte...</div>
+    <div id="loading-container" style="text-align: center; color: #bbb; padding: 50px; width: 100%; font-family: sans-serif;">
+        <div class="spinner"></div>
+        <div style="font-size: 14px; letter-spacing: 0.5px;">Conectando con la galería...</div>
+    </div>
+</div>
+
+<div class="load-more-container">
+    <button id="loadMoreBtn" class="load-btn" style="display: none;" onclick="loadNextBatch()">Ver más obras</button>
 </div>
 
 <div class="lightbox" id="lightbox">
@@ -339,24 +383,54 @@ const API_BASE = "https://script.google.com/macros/s/AKfycbzcwKYtpAnlFnZOSS7-jbQ
 let imageList = []; 
 let currentImageIndex = 0;
 let allPosts = []; 
+let filteredPosts = [];
+let searchTimeout;
 
-async function loadFeed() {
-    const feed = document.getElementById("feed");
+let currentPointer = 0;
+const BATCH_SIZE = 12; 
+let isSequenceActive = false;
+
+function loadFeed() {
+    const cachedData = localStorage.getItem("artist_corner_feed_cache");
     
+    if (cachedData) {
+        try {
+            allPosts = JSON.parse(cachedData);
+            filterAndRender(); 
+        } catch(e) {
+            console.error("Error leyendo caché", e);
+        }
+    }
+
+    fetchInBackground();
+}
+
+async function fetchInBackground() {
     try {
         const res = await fetch(`${API_BASE}?action=list`, {
             method: "GET",
             redirect: "follow"
         });
         
-        if (!res.ok) throw new Error("Error al conectar con la base de datos");
+        if (!res.ok) throw new Error("Error de red");
+        const freshPosts = await res.json();
         
-        allPosts = await res.json();
-        filterAndRender();
-
+        if (freshPosts && freshPosts.length > 0) {
+            const freshString = JSON.stringify(freshPosts);
+            if (freshString !== localStorage.getItem("artist_corner_feed_cache")) {
+                localStorage.setItem("artist_corner_feed_cache", freshString);
+                allPosts = freshPosts;
+                filterAndRender(); 
+            } else {
+                const loader = document.getElementById("loading-container");
+                if (loader) loader.remove();
+            }
+        }
     } catch (err) {
-        console.error("Error al cargar el feed:", err);
-        feed.innerHTML = '<div style="text-align:center; color:#e74c3c; padding:50px; width:100%;">Error al conectar con la galería de Artist Corner.</div>';
+        console.error("Error cargando backend:", err);
+        if (allPosts.length === 0) {
+            document.getElementById("feed").innerHTML = '<div style="text-align:center; color:#e74c3c; padding:50px; width:100%;">Error al conectar con la galería de Artist Corner.</div>';
+        }
     }
 }
 
@@ -371,13 +445,11 @@ function isImageStarred(fileId) {
 
 function toggleStar(fileId) {
     let starredImages = getStarredImages();
-    
     if (starredImages.includes(fileId)) {
         starredImages = starredImages.filter(id => id !== fileId); 
     } else {
         starredImages.push(fileId); 
     }
-    
     localStorage.setItem("artist_corner_likes", JSON.stringify(starredImages));
 }
 
@@ -394,39 +466,67 @@ function filterAndRender() {
 
     feed.innerHTML = ""; 
     imageList = []; 
+    currentPointer = 0;
+    isSequenceActive = false; 
 
     if (!allPosts || allPosts.length === 0) {
         feed.innerHTML = '<div style="text-align:center; color:#aaa; padding:50px; width:100%;">Aún no hay obras de arte aprobadas en la galería.</div>';
+        document.getElementById("loadMoreBtn").style.display = "none";
         return;
     }
 
-    let renderedCount = 0; 
-
-    allPosts.forEach(post => {
+    filteredPosts = allPosts.filter(post => {
         const tagsString = (post.tags || "").toLowerCase();
         const isPostNsfw = post.nsfw === true || tagsString.includes("nsfw");
 
-        if (showNsfwOnly) {
-            if (!isPostNsfw) return;
-        } else {
-            if (isPostNsfw) return;
-        }
-
-        const title = post.title || "Sin título";
-        const author = post.author || "Anónimo";
-        const tags = post.tags || "";
+        if (showNsfwOnly && !isPostNsfw) return false;
+        if (!showNsfwOnly && isPostNsfw) return false;
 
         if (search) {
-            const matchTitle = title.toLowerCase().includes(search);
-            const matchAuthor = author.toLowerCase().includes(search);
-            const matchTags = tags.toLowerCase().includes(search);
-            
-            if (!matchTitle && !matchAuthor && !matchTags) {
-                return;
-            }
+            const title = (post.title || "").toLowerCase();
+            const author = (post.author || "").toLowerCase();
+            return title.includes(search) || author.includes(search) || tagsString.includes(search);
         }
+        return true;
+    });
 
-        // --- DETECCIÓN Y SOPORTE PARA GIFS ---
+    if (filteredPosts.length === 0) {
+        feed.innerHTML = '<div style="text-align:center; color:#aaa; padding:50px; width:100%;">No se encontraron resultados para los filtros seleccionados.</div>';
+        document.getElementById("loadMoreBtn").style.display = "none";
+        return;
+    }
+
+    loadNextBatch();
+}
+
+async function loadNextBatch() {
+    const loadMoreBtn = document.getElementById("loadMoreBtn");
+    loadMoreBtn.style.display = "none";
+
+    const end = Math.min(currentPointer + BATCH_SIZE, filteredPosts.length);
+    const batch = filteredPosts.slice(currentPointer, end);
+    
+    currentPointer = end;
+    isSequenceActive = true;
+
+    for (let i = 0; i < batch.length; i++) {
+        if (!isSequenceActive) break; 
+        await renderCardSingle(batch[i]);
+    }
+
+    if (currentPointer < filteredPosts.length && isSequenceActive) {
+        loadMoreBtn.style.display = "inline-block";
+    }
+}
+
+function renderCardSingle(post) {
+    return new Promise((resolve) => {
+        const feed = document.getElementById("feed");
+        const tagsString = (post.tags || "").toLowerCase();
+        const isPostNsfw = post.nsfw === true || tagsString.includes("nsfw");
+        const title = post.title || "Sin título";
+        const author = post.author || "Anónimo";
+
         const isGif = (post.mimeType && post.mimeType.includes("image/gif")) || 
                       (post.filename && post.filename.toLowerCase().endsWith(".gif")) ||
                       tagsString.includes("gif");
@@ -440,28 +540,29 @@ function filterAndRender() {
         
         imageList.push({
             id: post.fileId,
-            url: imgUrl,
+            url: imgUrl, 
             title: title,
             author: author,
-            tags: tags
+            tags: post.tags || ""
         });
+
+        let feedThumbUrl = `https://drive.google.com/thumbnail?id=${post.fileId}&sz=w400`;
 
         const card = document.createElement("div");
         card.className = "card";
         card.setAttribute("data-nsfw", isPostNsfw); 
-        
-        card.style.animationDelay = `${renderedCount * 0.05}s`;
-        renderedCount++;
+        card.style.animationDelay = `${(imageList.length % BATCH_SIZE) * 0.03}s`;
 
         const hasStar = isImageStarred(post.fileId);
+        const imgIndex = imageList.length - 1;
 
         card.innerHTML = `
             <div class="video-container">
                 <img
-                    src="${imgUrl}"
                     alt="${title}"
                     loading="lazy"
-                    onclick="openImage(${imageList.length - 1})">
+                    id="img-lazy-${post.fileId}"
+                    onclick="openImage(${imgIndex})">
             </div>
             <div class="info">
                 <div class="title-row">
@@ -475,12 +576,14 @@ function filterAndRender() {
                 ${post.description ? `<div style="font-size:12px; color:#888; margin-top:5px;">${post.description}</div>` : ''}
             </div>
         `;
+        
         feed.appendChild(card);
-    });
 
-    if (feed.children.length === 0) {
-        feed.innerHTML = '<div style="text-align:center; color:#aaa; padding:50px; width:100%;">No se encontraron resultados para los filtros seleccionados.</div>';
-    }
+        const imgElement = document.getElementById(`img-lazy-${post.fileId}`);
+        imgElement.onload = () => resolve();
+        imgElement.onerror = () => resolve();
+        imgElement.src = feedThumbUrl;
+    });
 }
 
 function handleCardStar(event, fileId, element) {
@@ -497,41 +600,63 @@ function filterByTag(tagName) {
     filterAndRender();
 }
 
-document.getElementById("searchInput").addEventListener("input", filterAndRender);
+document.getElementById("searchInput").addEventListener("input", () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(filterAndRender, 300);
+});
+
 document.getElementById("nsfwToggle").addEventListener("change", filterAndRender);
 
 /* ==========================================
    MÓDULO DE LIGHTBOX
 ========================================== */
+const lightboxImg = document.getElementById("lightboxImg");
+
+function clearLightboxImage() {
+    lightboxImg.style.display = "none"; 
+    lightboxImg.src = ""; 
+}
+
+const preloadImage = new Image(); 
+
 function updateLightboxContent(index) {
     const imageData = imageList[index];
-    
-    document.getElementById("lightboxImg").src = imageData.url;
+    if (!imageData) return;
+
+    clearLightboxImage();
+
     document.getElementById("lbTitle").textContent = imageData.title;
     document.getElementById("lbAuthor").textContent = `Por: ${imageData.author}`;
 
     const tagsContainer = document.getElementById("lbTags");
     tagsContainer.innerHTML = ""; 
-    
     if (imageData.tags) {
         const tagArray = imageData.tags.split(",");
         tagArray.forEach(tag => {
             const cleanTag = tag.trim();
             if (cleanTag === "") return; 
-            
             const tagSpan = document.createElement("span");
             tagSpan.className = "tag-badge";
             tagSpan.textContent = `#${cleanTag}`;
-            
             tagSpan.onclick = function(event) {
                 event.stopPropagation();
                 filterByTag(cleanTag);
             };
-            
             tagsContainer.appendChild(tagSpan);
         });
     } else {
         tagsContainer.textContent = "Sin etiquetas";
+    }
+
+    lightboxImg.onload = function() {
+        lightboxImg.style.display = "block"; 
+    };
+    lightboxImg.src = imageData.url; 
+
+    const nextIndex = (index + 1) % imageList.length;
+    const nextImageData = imageList[nextIndex];
+    if(nextImageData) {
+        preloadImage.src = nextImageData.url; 
     }
 }
 
