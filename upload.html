@@ -32,6 +32,16 @@
       color: #ccc;
       cursor: pointer;
   }
+
+  /* Aviso de formato para los tags */
+  .tags-notice {
+      font-size: 11px;
+      color: #a29bfe;
+      margin-top: 4px;
+      margin-bottom: 12px;
+      font-family: sans-serif;
+      line-height: 1.4;
+  }
 </style>
 </head>
 <body>
@@ -65,7 +75,10 @@
         <input type="text" id="author" maxlength="20" placeholder="Tu nombre artístico">
 
         <label class="upload-label">Tags (Máx. 40 car.)</label>
-        <input type="text" id="tags" maxlength="40" placeholder="Ej. fanart,female,pokemon">
+        <input type="text" id="tags" maxlength="40" placeholder="Ej. male, day, red.">
+        <div class="tags-notice">
+            💡 El sistema organizará automáticamente tus tags al formato correcto: <b>tag 1, tag 2, tag 3</b>.
+        </div>
 
         <label class="upload-label">Descripción corta (Máx. 80 car.)</label>
         <textarea id="description" maxlength="80" placeholder="Un mensaje muy breve o tu red social..."></textarea>
@@ -106,7 +119,7 @@ async function uploadImage() {
     
     const title = document.getElementById("title").value.trim();
     const author = document.getElementById("author").value.trim();
-    const tags = document.getElementById("tags").value.trim();
+    const tagsInput = document.getElementById("tags").value.trim();
     const description = document.getElementById("description").value.trim();
     const file = document.getElementById("imageUpload").files[0];
     const isNsfw = document.getElementById("nsfwUploadCheck").checked;
@@ -136,12 +149,12 @@ async function uploadImage() {
         return;
     }
 
-    if (!tags) {
+    if (!tagsInput) {
         alert("Error: Introduce al menos un tag.");
         document.getElementById("tags").focus();
         return;
     }
-    if (tags.length > 40) {
+    if (tagsInput.length > 40) {
         alert("Error: Los tags no pueden superar los 40 caracteres.");
         document.getElementById("tags").focus();
         return;
@@ -159,6 +172,57 @@ async function uploadImage() {
         return;
     }
 
+    // ==========================================
+    // PROCESAMIENTO FILTRO UNIVERSAL DE TAGS
+    // ==========================================
+    let rawTags = tagsInput;
+
+    // 1. Si el usuario pegó hashtags seguidos de espacios (ej: "#tag 1 #tag2"), 
+    // metemos una coma intermedia justo antes de cada '#' para no perder la separación.
+    rawTags = rawTags.replace(/\s+(?=#)/g, ',');
+
+    // 2. Eliminamos de raíz todos los símbolos '#' del texto
+    rawTags = rawTags.replace(/#/g, '');
+
+    // 3. Reducimos espacios gigantes o tabulaciones a un solo espacio
+    rawTags = rawTags.replace(/[\s\t]+/g, ' ');
+
+    // 4. Convertimos los tags en un array separando por comas para su limpieza individual
+    let tagArray = rawTags.split(',');
+    let finalTagsArray = [];
+    
+    tagArray.forEach(tag => {
+        let cleanTag = tag.trim();
+        if (cleanTag === "") return;
+
+        // Lista de marcas protegidas para evitar que se dividan por sus espacios internos
+        const marcasProtegidas = ["brawl stars", "helluva boss", "friday night funkin", "my little pony", "pokemon go", "cookie run"];
+        let lowerTag = cleanTag.toLowerCase();
+
+        // Evaluamos si el bloque actual contiene alguna de las palabras clave protegidas
+        let esCompuestoProtegido = marcasProtegidas.some(marca => lowerTag.includes(marca));
+
+        if (esCompuestoProtegido) {
+            finalTagsArray.push(cleanTag);
+        } else {
+            // Si no contiene marcas protegidas y tiene espacios sueltos (ej: "tag3 tag4"),
+            // los separamos de forma individual.
+            let subTags = cleanTag.split(' ');
+            subTags.forEach(sub => {
+                if (sub.trim() !== "") finalTagsArray.push(sub.trim());
+            });
+        }
+    });
+
+    // 5. Volvemos a armar la cadena separada estrictamente por comas y espacios limpios
+    let processedTags = finalTagsArray.join(', ');
+
+    if (!processedTags) {
+        alert("Error: Los tags ingresados no son válidos.");
+        document.getElementById("tags").focus();
+        return;
+    }
+
     button.disabled = true;
     button.textContent = "Enviando...";
 
@@ -168,7 +232,7 @@ async function uploadImage() {
             const base64 = reader.result.split(",")[1];
 
             const response = await fetch(
-                "https://script.google.com/macros/s/AKfycbydVYcMLTzmPdN_fiJLsIGmaiD8epWYI8HrDLlYaoqQhvE_jYEhY_4KRGaNpZMpgaNb/exec",
+                "https://script.google.com/macros/s/AKfycbzcwKYtpAnlFnZOSS7-jbQ2cDeiyZThmojE28E-YxmMnTaiegmmnnrmS_7q-NIX4l_q/exec",
                 {
                     method: "POST",
                     body: JSON.stringify({
@@ -177,7 +241,7 @@ async function uploadImage() {
                         image: base64,
                         title: title,
                         author: author,
-                        tags: tags,
+                        tags: processedTags, // Enviamos la cadena formateada perfectamente
                         description: description,
                         nsfw: isNsfw
                     })
