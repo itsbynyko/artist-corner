@@ -159,7 +159,7 @@
       overflow-y: auto; 
   }
 
-  /* BOTÓN DE CARGA INFERIOR - ¡AHORA MORADITO! */
+  /* BOTÓN DE CARGA INFERIOR */
   .load-more-container {
       text-align: center;
       padding: 25px 0;
@@ -167,7 +167,7 @@
       clear: both;
   }
   .load-btn {
-      background: #8e44ad; /* Morado base */
+      background: #8e44ad; 
       color: white;
       border: none;
       padding: 12px 35px;
@@ -179,10 +179,10 @@
       transition: background 0.2s, transform 0.1s;
   }
   .load-btn:hover {
-      background: #732d91; /* Morado más oscuro al pasar el mouse */
+      background: #732d91; 
   }
   .load-btn:active {
-      transform: scale(0.98); /* Efecto sutil de hundimiento al clickear */
+      transform: scale(0.98); 
   }
 
   /* SPINNER ANIMADO PARA EL FEED Y EL LIGHTBOX */
@@ -191,7 +191,7 @@
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      border-left-color: #8e44ad; /* Spinner morado también */
+      border-left-color: #8e44ad; 
       animation: spin 1s linear infinite;
       margin: 20px auto;
   }
@@ -200,9 +200,7 @@
       100% { transform: rotate(360deg); }
   }
 
-  /* =======================================================
-      SOLUCIÓN MÓVIL DISPOSITIVOS (MAX 768PX)
-      ======================================================= */
+  /* SOLUCIÓN MÓVIL DISPOSITIVOS (MAX 768PX) */
   @media (max-width: 768px) {
       body {
           padding: 10px !important; 
@@ -630,14 +628,40 @@ function updateLightboxContent(index) {
 
     const tagsContainer = document.getElementById("lbTags");
     tagsContainer.innerHTML = ""; 
+    
     if (imageData.tags) {
-        const tagArray = imageData.tags.split(",");
+        let rawTags = imageData.tags.trim();
+        let cleanTagsString = "";
+
+        // CASO 1: El usuario usó comas para separar (Dejamos espacios internos intactos)
+        if (rawTags.includes(",")) {
+            cleanTagsString = rawTags.replace(/#/g, '');
+        } 
+        // CASO 2: El usuario usó hashtags y espacios como "#Friday Night Funkin #Brawl Stars"
+        else if (rawTags.includes("#")) {
+            // Reemplaza el espacio que va JUSTO ANTES de un '#' por una coma sólida
+            cleanTagsString = rawTags.replace(/\s+(?=#)/g, ',');
+            // Limpia los '#' restantes
+            cleanTagsString = cleanTagsString.replace(/#/g, '');
+        } 
+        // CASO 3: El usuario usó texto plano sin comas ni hashtags
+        else {
+            cleanTagsString = rawTags.replace(/[\s]+/g, ',');
+        }
+
+        // Procesamos el array finalizado
+        const tagArray = cleanTagsString.split(",");
+        
         tagArray.forEach(tag => {
             const cleanTag = tag.trim();
             if (cleanTag === "") return; 
+            
             const tagSpan = document.createElement("span");
             tagSpan.className = "tag-badge";
+            
+            // Renderiza el tag completo con su espacio interno
             tagSpan.textContent = `#${cleanTag}`;
+            
             tagSpan.onclick = function(event) {
                 event.stopPropagation();
                 filterByTag(cleanTag);
