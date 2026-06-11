@@ -257,7 +257,15 @@
             <h2>Historial de Actualizaciones</h2>
 
             <div class="update-log">
-                <div class="update-version">Versión 1.5.2 (Actual)</div>
+                <div class="update-version">Versión 1.5.3 (Actual)</div>
+                <div class="update-date">10 de Junio, 2026</div>
+                <ul>
+                    <li><strong>Reversión del Sistema de Caché:</strong> Se retiró por completo la lógica híbrida basada en `localStorage` debido a fallas que congelaban o impedían la actualización correcta del feed principal al subir o borrar obras. El sistema vuelve a un método asíncrono limpio y directo.</li>
+                </ul>
+            </div>
+
+            <div class="update-log">
+                <div class="update-version">Versión 1.5.2</div>
                 <div class="update-date">10 de Junio, 2026</div>
                 <ul>
                     <li><strong>Hotfix de Etiquetas (Tags):</strong> Se solucionó el problema crítico por el cual los tags del arte enviado se mostraban de forma incorrecta en el feed principal, de ahora en adelante ya no deberia ocurrir.</li>
@@ -269,7 +277,6 @@
                 <div class="update-version">Versión 1.5.0</div>
                 <div class="update-date">9 de Junio, 2026</div>
                 <ul>
-                    <li><strong>Rediseño Asíncrono Híbrido:</strong> Implementación de caché local (`localStorage`) que reduce los tiempos de carga en visitas recurrentes a menos de 0.1 segundos, eliminando las pantallas en blanco.</li>
                     <li><strong>Pre-carga Inteligente (Precaching):</strong> El Lightbox ahora descarga de forma invisible la siguiente ilustración en segundo plano para una navegación instantánea y fluida.</li>
                     <li><strong>Solución de Bug Visual:</strong> Se corrigió el error por el cual la imagen anterior se quedaba congelada durante las transiciones de carga en el visor a pantalla completa.</li>
                     <li><strong>Ajustes Estéticos:</strong> Unificación de la paleta de colores del feed, el spinner de carga y el botón "Ver más obras" a tonos morados integrados con la interfaz del sitio.</li>
