@@ -66,7 +66,7 @@
       max-width: 320px;
       z-index: 10005;
       text-align: left;
-      border-left: 4px solid #8e44ad; /* Cambio a detalle morado */
+      border-left: 4px solid #8e44ad;
   }
   .lightbox-info .lb-title {
       font-size: 18px;
@@ -91,7 +91,7 @@
   
   .lightbox-info .tag-badge {
       background: #222;
-      color: #a29bfe; /* Tag color morado claro */
+      color: #a29bfe;
       padding: 2px 8px;
       border-radius: 4px;
       cursor: pointer;
@@ -385,25 +385,14 @@ let filteredPosts = [];
 let searchTimeout;
 
 let currentPointer = 0;
-const BATCH_SIZE = 12; 
+let initialBatchSize = 6;  
+const BATCH_SIZE = 12;     
 let isSequenceActive = false;
 
-function loadFeed() {
-    const cachedData = localStorage.getItem("artist_corner_feed_cache");
-    
-    if (cachedData) {
-        try {
-            allPosts = JSON.parse(cachedData);
-            filterAndRender(); 
-        } catch(e) {
-            console.error("Error leyendo caché", e);
-        }
-    }
+let currentCacheVersion = "stable";
 
-    fetchInBackground();
-}
-
-async function fetchInBackground() {
+// FUNCIÓN LIMPIA ORIGINAL: Llama directo al API sin localStorages propensos a romperse
+async function loadFeed() {
     try {
         const res = await fetch(`${API_BASE}?action=list`, {
             method: "GET",
@@ -411,24 +400,13 @@ async function fetchInBackground() {
         });
         
         if (!res.ok) throw new Error("Error de red");
-        const freshPosts = await res.json();
+        allPosts = await res.json();
         
-        if (freshPosts && freshPosts.length > 0) {
-            const freshString = JSON.stringify(freshPosts);
-            if (freshString !== localStorage.getItem("artist_corner_feed_cache")) {
-                localStorage.setItem("artist_corner_feed_cache", freshString);
-                allPosts = freshPosts;
-                filterAndRender(); 
-            } else {
-                const loader = document.getElementById("loading-container");
-                if (loader) loader.remove();
-            }
-        }
+        filterAndRender();
+        
     } catch (err) {
         console.error("Error cargando backend:", err);
-        if (allPosts.length === 0) {
-            document.getElementById("feed").innerHTML = '<div style="text-align:center; color:#e74c3c; padding:50px; width:100%;">Error al conectar con la galería de Artist Corner.</div>';
-        }
+        document.getElementById("feed").innerHTML = '<div style="text-align:center; color:#e74c3c; padding:50px; width:100%;">Error al conectar con la galería de Artist Corner.</div>';
     }
 }
 
@@ -452,6 +430,8 @@ function toggleStar(fileId) {
 }
 
 function filterAndRender() {
+    isSequenceActive = false; 
+
     const feed = document.getElementById("feed");
     const search = document.getElementById("searchInput").value.toLowerCase().trim();
     const showNsfwOnly = document.getElementById("nsfwToggle").checked;
@@ -465,7 +445,6 @@ function filterAndRender() {
     feed.innerHTML = ""; 
     imageList = []; 
     currentPointer = 0;
-    isSequenceActive = false; 
 
     if (!allPosts || allPosts.length === 0) {
         feed.innerHTML = '<div style="text-align:center; color:#aaa; padding:50px; width:100%;">Aún no hay obras de arte aprobadas en la galería.</div>';
@@ -494,22 +473,27 @@ function filterAndRender() {
         return;
     }
 
+    isSequenceActive = true;
     loadNextBatch();
 }
 
-async function loadNextBatch() {
+function loadNextBatch() {
     const loadMoreBtn = document.getElementById("loadMoreBtn");
     loadMoreBtn.style.display = "none";
 
-    const end = Math.min(currentPointer + BATCH_SIZE, filteredPosts.length);
+    const loader = document.getElementById("loading-container");
+    if (loader) loader.remove();
+
+    let currentBatchLimit = (currentPointer === 0) ? initialBatchSize : BATCH_SIZE;
+    const end = Math.min(currentPointer + currentBatchLimit, filteredPosts.length);
     const batch = filteredPosts.slice(currentPointer, end);
     
     currentPointer = end;
-    isSequenceActive = true;
 
+    // Inyección paralela limpia
     for (let i = 0; i < batch.length; i++) {
-        if (!isSequenceActive) break; 
-        await renderCardSingle(batch[i]);
+        if (!isSequenceActive) return; 
+        renderCardSingle(batch[i], currentBatchLimit);
     }
 
     if (currentPointer < filteredPosts.length && isSequenceActive) {
@@ -517,71 +501,64 @@ async function loadNextBatch() {
     }
 }
 
-function renderCardSingle(post) {
-    return new Promise((resolve) => {
-        const feed = document.getElementById("feed");
-        const tagsString = (post.tags || "").toLowerCase();
-        const isPostNsfw = post.nsfw === true || tagsString.includes("nsfw");
-        const title = post.title || "Sin título";
-        const author = post.author || "Anónimo";
+function renderCardSingle(post, currentBatchLimit) {
+    const feed = document.getElementById("feed");
+    const tagsString = (post.tags || "").toLowerCase();
+    const isPostNsfw = post.nsfw === true || tagsString.includes("nsfw");
+    const title = post.title || "Sin título";
+    const author = post.author || "Anónimo";
 
-        const isGif = (post.mimeType && post.mimeType.includes("image/gif")) || 
-                      (post.filename && post.filename.toLowerCase().endsWith(".gif")) ||
-                      tagsString.includes("gif");
+    const isGif = (post.mimeType && post.mimeType.includes("image/gif")) || 
+                  (post.filename && post.filename.toLowerCase().endsWith(".gif")) ||
+                  tagsString.includes("gif");
 
-        let imgUrl;
-        if (isGif) {
-            imgUrl = `https://drive.google.com/uc?export=view&id=${post.fileId}`;
-        } else {
-            imgUrl = `https://drive.google.com/thumbnail?id=${post.fileId}&sz=w1000`;
-        }
-        
-        imageList.push({
-            id: post.fileId,
-            url: imgUrl, 
-            title: title,
-            author: author,
-            tags: post.tags || ""
-        });
-
-        let feedThumbUrl = `https://drive.google.com/thumbnail?id=${post.fileId}&sz=w400`;
-
-        const card = document.createElement("div");
-        card.className = "card";
-        card.setAttribute("data-nsfw", isPostNsfw); 
-        card.style.animationDelay = `${(imageList.length % BATCH_SIZE) * 0.03}s`;
-
-        const hasStar = isImageStarred(post.fileId);
-        const imgIndex = imageList.length - 1;
-
-        card.innerHTML = `
-            <div class="video-container">
-                <img
-                    alt="${title}"
-                    loading="lazy"
-                    id="img-lazy-${post.fileId}"
-                    onclick="openImage(${imgIndex})">
-            </div>
-            <div class="info">
-                <div class="title-row">
-                    <div class="title" style="display:flex; align-items:center; flex-wrap:wrap; font-weight:bold;">
-                        ${title} 
-                        ${isPostNsfw ? '<span style="color:#e74c3c; font-size:10px; font-weight:bold; border:1px solid #e74c3c; padding:1px 3px; border-radius:3px; margin-left:5px;">18+</span>' : ''}
-                    </div>
-                    <button class="star-btn ${hasStar ? 'starred' : ''}" onclick="handleCardStar(event, '${post.fileId}', this)">★</button>
-                </div>
-                <div class="author">Por: ${author}</div>
-                ${post.description ? `<div style="font-size:12px; color:#888; margin-top:5px;">${post.description}</div>` : ''}
-            </div>
-        `;
-        
-        feed.appendChild(card);
-
-        const imgElement = document.getElementById(`img-lazy-${post.fileId}`);
-        imgElement.onload = () => resolve();
-        imgElement.onerror = () => resolve();
-        imgElement.src = feedThumbUrl;
+    let imgUrl;
+    if (isGif) {
+        imgUrl = `https://drive.google.com/uc?export=view&id=${post.fileId}&v=${currentCacheVersion}`;
+    } else {
+        imgUrl = `https://drive.google.com/thumbnail?id=${post.fileId}&sz=w1000&v=${currentCacheVersion}`;
+    }
+    
+    imageList.push({
+        id: post.fileId,
+        url: imgUrl, 
+        title: title,
+        author: author,
+        tags: post.tags || ""
     });
+
+    let feedThumbUrl = `https://drive.google.com/thumbnail?id=${post.fileId}&sz=w250&v=${currentCacheVersion}`;
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.setAttribute("data-nsfw", isPostNsfw); 
+    card.style.animationDelay = `${(imageList.length % currentBatchLimit) * 0.03}s`;
+
+    const hasStar = isImageStarred(post.fileId);
+    const imgIndex = imageList.length - 1;
+
+    card.innerHTML = `
+        <div class="video-container">
+            <img
+                alt="${title}"
+                loading="lazy"
+                src="${feedThumbUrl}"
+                onclick="openImage(${imgIndex})">
+        </div>
+        <div class="info">
+            <div class="title-row">
+                <div class="title" style="display:flex; align-items:center; flex-wrap:wrap; font-weight:bold;">
+                    ${title} 
+                    ${isPostNsfw ? '<span style="color:#e74c3c; font-size:10px; font-weight:bold; border:1px solid #e74c3c; padding:1px 3px; border-radius:3px; margin-left:5px;">18+</span>' : ''}
+                </div>
+                <button class="star-btn ${hasStar ? 'starred' : ''}" onclick="handleCardStar(event, '${post.fileId}', this)">★</button>
+            </div>
+            <div class="author">Por: ${author}</div>
+            ${post.description ? `<div style="font-size:12px; color:#888; margin-top:5px;">${post.description}</div>` : ''}
+        </div>
+    `;
+    
+    feed.appendChild(card);
 }
 
 function handleCardStar(event, fileId, element) {
@@ -633,23 +610,17 @@ function updateLightboxContent(index) {
         let rawTags = imageData.tags.trim();
         let cleanTagsString = "";
 
-        // CASO 1: El usuario usó comas para separar (Dejamos espacios internos intactos)
         if (rawTags.includes(",")) {
             cleanTagsString = rawTags.replace(/#/g, '');
         } 
-        // CASO 2: El usuario usó hashtags y espacios como "#Friday Night Funkin #Brawl Stars"
         else if (rawTags.includes("#")) {
-            // Reemplaza el espacio que va JUSTO ANTES de un '#' por una coma sólida
             cleanTagsString = rawTags.replace(/\s+(?=#)/g, ',');
-            // Limpia los '#' restantes
             cleanTagsString = cleanTagsString.replace(/#/g, '');
         } 
-        // CASO 3: El usuario usó texto plano sin comas ni hashtags
         else {
             cleanTagsString = rawTags.replace(/[\s]+/g, ',');
         }
 
-        // Procesamos el array finalizado
         const tagArray = cleanTagsString.split(",");
         
         tagArray.forEach(tag => {
@@ -658,8 +629,6 @@ function updateLightboxContent(index) {
             
             const tagSpan = document.createElement("span");
             tagSpan.className = "tag-badge";
-            
-            // Renderiza el tag completo con su espacio interno
             tagSpan.textContent = `#${cleanTag}`;
             
             tagSpan.onclick = function(event) {
