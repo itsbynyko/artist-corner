@@ -200,6 +200,81 @@
       100% { transform: rotate(360deg); }
   }
 
+  /* CONTENEDOR DE CARGA CENTRADO EN MEDIO DE LA PANTALLA */
+  .loading-wrapper {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #bbb;
+      font-family: sans-serif;
+      z-index: 999;
+      pointer-events: none; 
+  }
+
+  /* VENTANA MODAL PARA EL AVISO +18 */
+  .nsfw-modal {
+      display: none; 
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(5px);
+      justify-content: center;
+      align-items: center;
+      z-index: 100000;
+      font-family: sans-serif;
+  }
+  .nsfw-modal-content {
+      background: #221526;
+      border: 2px solid #e74c3c;
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      color: #fff;
+  }
+  .nsfw-modal-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #e74c3c;
+      margin-bottom: 12px;
+  }
+  .nsfw-modal-text {
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 25px;
+      color: #e0e0e0;
+  }
+  .nsfw-modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+  }
+  .nsfw-btn {
+      padding: 11px 28px;
+      font-size: 14px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+  }
+  .nsfw-btn-continue {
+      background: #e74c3c;
+      color: white;
+  }
+  .nsfw-btn-continue:hover { background: #c0392b; }
+  .nsfw-btn-exit {
+      background: #444;
+      color: #ddd;
+  }
+  .nsfw-btn-exit:hover { background: #555; color: #fff; }
+  .nsfw-btn:active { transform: scale(0.97); }
+
   /* SOLUCIÓN MÓVIL DISPOSITIVOS (MAX 768PX) */
   @media (max-width: 768px) {
       body {
@@ -352,12 +427,12 @@
     </div>
 </header>
 
-<div class="feed" id="feed">
-    <div id="loading-container" style="text-align: center; color: #bbb; padding: 50px; width: 100%; font-family: sans-serif;">
-        <div class="spinner"></div>
-        <div style="font-size: 14px; letter-spacing: 0.5px;">Conectando con la galería...</div>
-    </div>
+<div class="loading-wrapper" id="loading-container">
+    <div class="spinner"></div>
+    <div style="font-size: 14px; letter-spacing: 0.5px;">Conectando con la galería...</div>
 </div>
+
+<div class="feed" id="feed"></div>
 
 <div class="load-more-container">
     <button id="loadMoreBtn" class="load-btn" style="display: none;" onclick="loadNextBatch()">Ver más obras</button>
@@ -372,6 +447,17 @@
         <div class="lb-title" id="lbTitle">Título</div>
         <div class="lb-author" id="lbAuthor">Autor</div>
         <div class="lb-tags" id="lbTags"></div>
+    </div>
+</div>
+
+<div class="nsfw-modal" id="nsfwModal">
+    <div class="nsfw-modal-content">
+        <div class="nsfw-modal-title">NSFW</div>
+        <div class="nsfw-modal-text">Este contenido es para +18, al aceptar usted confirma que tiene por lo menos 18 años de edad.</div>
+        <div class="nsfw-modal-buttons">
+            <button class="nsfw-btn nsfw-btn-continue" id="nsfwContinueBtn">Continuar</button>
+            <button class="nsfw-btn nsfw-btn-exit" id="nsfwExitBtn">Salir</button>
+        </div>
     </div>
 </div>
 
@@ -391,7 +477,13 @@ let isSequenceActive = false;
 
 let currentCacheVersion = "stable";
 
-// FUNCIÓN LIMPIA ORIGINAL: Llama directo al API sin localStorages propensos a romperse
+// Control en memoria volátil: se reinicia siempre al refrescar con F5
+let yaAceptoNsfw = false; 
+
+// SE ASEGURA DE QUE EL CHECKBOX SIEMPRE EMPIECE DESACTIVADO TRAS CARGAR LA PÁGINA
+const nsfwToggle = document.getElementById("nsfwToggle");
+nsfwToggle.checked = false;
+
 async function loadFeed() {
     try {
         const res = await fetch(`${API_BASE}?action=list`, {
@@ -406,7 +498,10 @@ async function loadFeed() {
         
     } catch (err) {
         console.error("Error cargando backend:", err);
-        document.getElementById("feed").innerHTML = '<div style="text-align:center; color:#e74c3c; padding:50px; width:100%;">Error al conectar con la galería de Artist Corner.</div>';
+        const loader = document.getElementById("loading-container");
+        if(loader) {
+            loader.innerHTML = '<div style="text-align:center; color:#e74c3c; padding:50px; width:100%;">Error al conectar con la galería de Artist Corner.</div>';
+        }
     }
 }
 
@@ -434,7 +529,7 @@ function filterAndRender() {
 
     const feed = document.getElementById("feed");
     const search = document.getElementById("searchInput").value.toLowerCase().trim();
-    const showNsfwOnly = document.getElementById("nsfwToggle").checked;
+    const showNsfwOnly = nsfwToggle.checked;
 
     if (showNsfwOnly) {
         document.body.classList.add("nsfw-mode");
@@ -447,7 +542,6 @@ function filterAndRender() {
     currentPointer = 0;
 
     if (!allPosts || allPosts.length === 0) {
-        feed.innerHTML = '<div style="text-align:center; color:#aaa; padding:50px; width:100%;">Aún no hay obras de arte aprobadas en la galería.</div>';
         document.getElementById("loadMoreBtn").style.display = "none";
         return;
     }
@@ -468,7 +562,6 @@ function filterAndRender() {
     });
 
     if (filteredPosts.length === 0) {
-        feed.innerHTML = '<div style="text-align:center; color:#aaa; padding:50px; width:100%;">No se encontraron resultados para los filtros seleccionados.</div>';
         document.getElementById("loadMoreBtn").style.display = "none";
         return;
     }
@@ -482,7 +575,9 @@ function loadNextBatch() {
     loadMoreBtn.style.display = "none";
 
     const loader = document.getElementById("loading-container");
-    if (loader) loader.remove();
+    if (loader && filteredPosts.length > 0) {
+        loader.style.display = "none";
+    }
 
     let currentBatchLimit = (currentPointer === 0) ? initialBatchSize : BATCH_SIZE;
     const end = Math.min(currentPointer + currentBatchLimit, filteredPosts.length);
@@ -490,7 +585,6 @@ function loadNextBatch() {
     
     currentPointer = end;
 
-    // Inyección paralela limpia
     for (let i = 0; i < batch.length; i++) {
         if (!isSequenceActive) return; 
         renderCardSingle(batch[i], currentBatchLimit);
@@ -580,7 +674,36 @@ document.getElementById("searchInput").addEventListener("input", () => {
     searchTimeout = setTimeout(filterAndRender, 300);
 });
 
-document.getElementById("nsfwToggle").addEventListener("change", filterAndRender);
+
+/* ====================================================================
+    INTERCEPTOR DE ADVERTENCIA +18
+======================================================================= */
+const nsfwModal = document.getElementById("nsfwModal");
+const nsfwContinueBtn = document.getElementById("nsfwContinueBtn");
+const nsfwExitBtn = document.getElementById("nsfwExitBtn");
+
+nsfwToggle.addEventListener("click", function(e) {
+    if (this.checked && !yaAceptoNsfw) {
+        e.preventDefault();              
+        nsfwModal.style.display = "flex"; 
+    } else {
+        filterAndRender();
+    }
+});
+
+nsfwContinueBtn.addEventListener("click", () => {
+    yaAceptoNsfw = true;              
+    nsfwModal.style.display = "none"; 
+    nsfwToggle.checked = true;                       
+    filterAndRender();                               
+});
+
+nsfwExitBtn.addEventListener("click", () => {
+    nsfwModal.style.display = "none";                
+    nsfwToggle.checked = false;                      
+    filterAndRender();                               
+});
+
 
 /* ==========================================
    MÓDULO DE LIGHTBOX
