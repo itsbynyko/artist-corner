@@ -68,20 +68,20 @@
             </div>
         </div>
 
-        <label class="upload-label">Título (Máx. 25 car.)</label>
-        <input type="text" id="title" maxlength="25" placeholder="Título de la obra">
+        <label class="upload-label">Título (Máx. 50 car.)</label>
+        <input type="text" id="title" maxlength="50" placeholder="Título de la obra">
 
-        <label class="upload-label">Autor (Máx. 20 car.)</label>
-        <input type="text" id="author" maxlength="20" placeholder="Tu nombre artístico">
+        <label class="upload-label">Autor (Máx. 30 car.)</label>
+        <input type="text" id="author" maxlength="30" placeholder="Tu nombre artístico">
 
-        <label class="upload-label">Tags (Máx. 40 car.)</label>
-        <input type="text" id="tags" maxlength="40" placeholder="Ej. male, day, red.">
+        <label class="upload-label">Tags (Máx. 100 car.)</label>
+        <input type="text" id="tags" maxlength="100" placeholder="Ej. male, day, red.">
         <div class="tags-notice">
             💡 El sistema organizará automáticamente tus tags al formato correcto: <b>tag 1, tag 2, tag 3</b>.
         </div>
 
-        <label class="upload-label">Descripción corta (Máx. 80 car.)</label>
-        <textarea id="description" maxlength="80" placeholder="Un mensaje muy breve o tu red social..."></textarea>
+        <label class="upload-label">Descripción corta (Máx. 250 car.)</label>
+        <textarea id="description" maxlength="250" placeholder="Un mensaje breve, redes sociales, detalles de la obra..."></textarea>
 
         <label class="upload-label">Archivo</label>
         <input type="file" id="imageUpload" accept="image/*">
@@ -125,15 +125,15 @@ async function uploadImage() {
     const isNsfw = document.getElementById("nsfwUploadCheck").checked;
 
     // ==========================================
-    // VALIDACIONES CON LOS NUEVOS LÍMITES CORTOS
+    // VALIDACIONES CON LOS NUEVOS LÍMITES AMPLIADOS
     // ==========================================
     if (!title) {
         alert("Error: Por favor, escribe un título.");
         document.getElementById("title").focus();
         return;
     }
-    if (title.length > 25) {
-        alert("Error: El título no puede superar los 25 caracteres.");
+    if (title.length > 50) {
+        alert("Error: El título no puede superar los 50 caracteres.");
         document.getElementById("title").focus();
         return;
     }
@@ -143,8 +143,8 @@ async function uploadImage() {
         document.getElementById("author").focus();
         return;
     }
-    if (author.length > 20) {
-        alert("Error: El autor no puede superar los 20 caracteres.");
+    if (author.length > 30) {
+        alert("Error: El autor no puede superar los 30 caracteres.");
         document.getElementById("author").focus();
         return;
     }
@@ -154,14 +154,14 @@ async function uploadImage() {
         document.getElementById("tags").focus();
         return;
     }
-    if (tagsInput.length > 40) {
-        alert("Error: Los tags no pueden superar los 40 caracteres.");
+    if (tagsInput.length > 100) {
+        alert("Error: Los tags no pueden superar los 100 caracteres.");
         document.getElementById("tags").focus();
         return;
     }
 
-    if (description.length > 80) {
-        alert("Error: La descripción no puede superar los 80 caracteres.");
+    if (description.length > 250) {
+        alert("Error: La descripción no puede superar los 250 caracteres.");
         document.getElementById("description").focus();
         return;
     }
