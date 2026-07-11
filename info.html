@@ -6,14 +6,6 @@
 <title>Información - Artist Corner</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  /* ESTADO POR DEFECTO: FONDO MORADO EXACTO DEL INDEX */
-  body {
-      background-color: #513159; 
-      transition: background-color 0.5s ease; 
-      margin: 0;
-      font-family: sans-serif;
-      color: #fff;
-  }
 
   /* CONTENEDOR FLEX PARA ESTRUCTURAR EL MENÚ LATERAL Y LA BITÁCORA */
   .layout-wrapper {
@@ -222,14 +214,13 @@
 <header class="topbar">
     <div class="left-section">
         <div class="logo">
-            <img src="ArtistCornerLogo.png" alt="Logo">
+            <img src="ArtistCornerLogoVerano2026.png" alt="Logo">
         </div>
         <nav class="menu">
             <a href="index.html">Inicio</a>
             <a href="rules.html">Reglas</a>
             <a href="upload.html">Subir Arte</a>
-            <a href="info.html" style="font-weight: bold; color: #fff;">Información</a>
-            <a href="https://discord.gg/gg3N2hKKvD" target="_blank">Discord</a>
+            <a href="info.html">Información</a>
             <a href="https://ko-fi.com/itsbynyko" target="_blank">Donar</a>
         </nav>
     </div>
@@ -257,7 +248,24 @@
             <h2>Historial de Actualizaciones</h2>
 
             <div class="update-log">
-                <div class="update-version">Versión 1.5.3 (Actual)</div>
+
+                <div class="update-log">
+                <div class="update-version">Versión 2.0 (Actual)</div>
+                <div class="update-date">10 de Julio, 2026</div>
+                <ul>
+                    <li><strong>Reestructuración General:</strong> Se reconstruyó gran parte de la página para mejorar la organización del código, la navegación y facilitar futuras actualizaciones.</li>
+
+                    <li><strong>Tema de Verano:</strong> Artist Corner ahora cuenta con una nueva identidad visual inspirada en el verano, con una paleta de colores cálidos y una interfaz mucho más agradable a la vista.</li>
+
+                    <li><strong>Nuevas Visuales:</strong> Se añadieron nuevos elementos gráficos y decorativos por la temporada de verano, incluyendo un rediseño del logo, la barra superior y la interfaz general.</li>
+
+                    <li><strong>Unificación de la Interfaz:</strong> Las páginas de Reglas, Información y Subir Arte ahora comparten el mismo estilo visual para ofrecer una experiencia más consistente.</li>
+
+                    <li><strong>Mejoras de Calidad:</strong> Se realizaron numerosos ajustes visuales, optimizaciones de diseño y pequeñas correcciones en distintos apartados de la página.</li>
+                </ul>
+            </div>
+
+                <div class="update-version">Versión 1.5.3</div>
                 <div class="update-date">10 de Junio, 2026</div>
                 <ul>
                     <li><strong>Reversión del Sistema de Caché:</strong> Se retiró por completo la lógica híbrida basada en `localStorage` debido a fallas que congelaban o impedían la actualización correcta del feed principal al subir o borrar obras. El sistema vuelve a un método asíncrono limpio y directo.</li>
