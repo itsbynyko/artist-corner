@@ -1,414 +1,28 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Artist Corner</title>
-<link rel="stylesheet" href="style.css">
-<style>
-  /* ESTADO POR DEFECTO: FONDO MORADO */
-  body {
-      background-color: #513159; 
-      transition: background-color 0.5s ease; 
-      margin: 0;
-  }
-
-  /* ESTADO AL ACTIVAR LA CASILLA: FADE A NEGRO / GRIS OSCURO */
-  body.nsfw-mode {
-      background-color: #121212; 
-  }
-
-  /* ANIMACIÓN DE ENTRADA PARA LAS TARJETAS */
-  @keyframes fadeInCard {
-      0% {
-          opacity: 0;
-          transform: translateY(20px);
-      }
-      100% {
-          opacity: 1;
-          transform: translateY(0);
-      }
-  }
-
-  /* REGLA PARA LAS TARJETAS DE PUBLICACIÓN */
-  .card {
-      opacity: 0; 
-      animation: fadeInCard 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-  }
-
-  .nsfw-control {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      color: #fff;
-      font-family: sans-serif;
-      font-size: 14px;
-      user-select: none;
-      cursor: pointer;
-      margin-left: 15px;
-  }
-  .nsfw-control input {
-      cursor: pointer;
-      width: 16px;
-      height: 16px;
-  }
-
-  /* ESTILOS PARA LA INFORMACIÓN DEL LIGHTBOX (PC) */
-  .lightbox-info {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      background: rgba(0, 0, 0, 0.85);
-      color: #fff;
-      padding: 15px 20px;
-      border-radius: 8px;
-      font-family: sans-serif;
-      max-width: 320px;
-      z-index: 10005;
-      text-align: left;
-      border-left: 4px solid #8e44ad;
-  }
-  .lightbox-info .lb-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 4px;
-      color: #fff;
-  }
-  .lightbox-info .lb-author {
-      font-size: 14px;
-      color: #bbb;
-      margin-bottom: 8px;
-  }
-  
-  .lightbox-info .lb-tags {
-      font-size: 12px;
-      color: #888;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-top: 5px;
-  }
-  
-  .lightbox-info .tag-badge {
-      background: #222;
-      color: #a29bfe;
-      padding: 2px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background 0.2s, color 0.2s;
-      pointer-events: auto;
-  }
-  .lightbox-info .tag-badge:hover {
-      background: #8e44ad;
-      color: #fff;
-  }
-
-  /* BOTÓN DE ESTRELLA EN LAS TARJETAS */
-  .star-btn {
-      background: #eeeeee; 
-      border: none;
-      color: #888888; 
-      width: 36px;
-      height: 36px;
-      border-radius: 50%; 
-      cursor: pointer;
-      transition: transform 0.2s, background 0.2s, color 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      font-size: 18px;
-      user-select: none;
-      flex-shrink: 0; 
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
-  .star-btn:hover {
-      transform: scale(1.1);
-      background: #e5e5e5;
-      color: #f1c40f; 
-  }
-  .star-btn.starred {
-      background: #eeeeee; 
-      color: #f1c40f; 
-      animation: popEffect 0.3s ease-in-out;
-  }
-
-  .title-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 15px; 
-      width: 100%;
-  }
-
-  @keyframes popEffect {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.3); }
-      100% { transform: scale(1); }
-  }
-
-  .lightbox {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.95);
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      overflow-y: auto; 
-  }
-
-  /* BOTÓN DE CARGA INFERIOR */
-  .load-more-container {
-      text-align: center;
-      padding: 25px 0;
-      width: 100%;
-      clear: both;
-  }
-  .load-btn {
-      background: #8e44ad; 
-      color: white;
-      border: none;
-      padding: 12px 35px;
-      font-size: 15px;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
-      transition: background 0.2s, transform 0.1s;
-  }
-  .load-btn:hover {
-      background: #732d91; 
-  }
-  .load-btn:active {
-      transform: scale(0.98); 
-  }
-
-  /* SPINNER ANIMADO PARA EL FEED Y EL LIGHTBOX */
-  .spinner {
-      border: 4px solid rgba(255, 255, 255, 0.1);
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border-left-color: #8e44ad; 
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-  }
-  @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-  }
-
-  /* CONTENEDOR DE CARGA CENTRADO EN MEDIO DE LA PANTALLA */
-  .loading-wrapper {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: #bbb;
-      font-family: sans-serif;
-      z-index: 999;
-      pointer-events: none; 
-  }
-
-  /* VENTANA MODAL PARA EL AVISO +18 */
-  .nsfw-modal {
-      display: none; 
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(5px);
-      justify-content: center;
-      align-items: center;
-      z-index: 100000;
-      font-family: sans-serif;
-  }
-  .nsfw-modal-content {
-      background: #221526;
-      border: 2px solid #e74c3c;
-      padding: 30px;
-      border-radius: 12px;
-      text-align: center;
-      max-width: 420px;
-      width: 90%;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-      color: #fff;
-  }
-  .nsfw-modal-title {
-      font-size: 22px;
-      font-weight: bold;
-      color: #e74c3c;
-      margin-bottom: 12px;
-  }
-  .nsfw-modal-text {
-      font-size: 15px;
-      line-height: 1.6;
-      margin-bottom: 25px;
-      color: #e0e0e0;
-  }
-  .nsfw-modal-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-  }
-  .nsfw-btn {
-      padding: 11px 28px;
-      font-size: 14px;
-      font-weight: bold;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-  }
-  .nsfw-btn-continue {
-      background: #e74c3c;
-      color: white;
-  }
-  .nsfw-btn-continue:hover { background: #c0392b; }
-  .nsfw-btn-exit {
-      background: #444;
-      color: #ddd;
-  }
-  .nsfw-btn-exit:hover { background: #555; color: #fff; }
-  .nsfw-btn:active { transform: scale(0.97); }
-
-  /* SOLUCIÓN MÓVIL DISPOSITIVOS (MAX 768PX) */
-  @media (max-width: 768px) {
-      body {
-          padding: 10px !important; 
-      }
-
-      .topbar {
-          flex-direction: column !important; 
-          height: auto !important; 
-          padding: 15px !important;
-          gap: 15px !important;
-      }
-
-      .left-section {
-          width: 100% !important;
-          justify-content: space-between !important; 
-          gap: 10px !important;
-      }
-
-      .logo img {
-          width: 150px !important; 
-          height: auto !important;
-      }
-
-      .menu {
-          gap: 12px !important; 
-          flex-wrap: wrap !important;
-      }
-
-      .menu a {
-          font-size: 14px !important;
-          white-space: nowrap !important; 
-      }
-
-      .search-box {
-          width: 100% !important; 
-          max-width: 100% !important; 
-          display: flex !important;
-          align-items: center !important;
-          justify-content: space-between !important;
-          gap: 10px !important;
-      }
-
-      .search-box input {
-          flex-grow: 1 !important; 
-          width: auto !important;
-          padding: 10px 15px !important;
-          font-size: 14px !important;
-      }
-
-      .nsfw-control {
-          margin-left: 0 !important; 
-          flex-shrink: 0 !important; 
-          white-space: nowrap !important;
-      }
-
-      .feed {
-          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important; 
-          gap: 10px !important;
-      }
-
-      .card .info {
-          padding: 10px !important;
-      }
-
-      .title {
-          font-size: 14px !important;
-      }
-
-      .author {
-          font-size: 12px !important;
-       }
-
-      .card .star-btn {
-          width: 30px !important;
-          height: 30px !important;
-          font-size: 14px !important;
-      }
-
-      .lightbox {
-          flex-direction: column !important; 
-          justify-content: flex-start !important; 
-          padding: 20px 10px !important;
-      }
-
-      .lightbox img {
-          max-width: 100% !important;
-          max-height: 60vh !important; 
-          object-fit: contain !important;
-          margin-top: auto;
-          margin-bottom: 20px;
-      }
-
-      .lightbox-info {
-          position: relative !important; 
-          left: 0 !important;
-          bottom: 0 !important;
-          right: 0 !important;
-          width: 100% !important;
-          max-width: 450px !important; 
-          margin: 0 auto auto auto !important; 
-          background: #1a1a1a !important; 
-          box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
-          border-left: 4px solid #8e44ad !important;
-          padding: 15px !important;
-          box-sizing: border-box !important;
-      }
-
-      .nav-btn {
-          position: fixed !important;
-          top: 35% !important; 
-          width: 45px !important;
-          height: 45px !important;
-          font-size: 18px !important;
-          background: rgba(0,0,0,0.6) !important;
-          border: 1px solid rgba(255,255,255,0.2) !important;
-      }
-      .left { left: 5px !important; }
-      .right { right: 5px !important; }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Corner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <!-- Barra superior -->
 <header class="topbar">
     <div class="left-section">
         <div class="logo">
-            <img src="ArtistCornerLogoUPT2.png" alt="Logo">
+            <img src="ArtistCornerLogoVerano2026.png" alt="Logo">
         </div>
         <nav class="menu">
             <a href="index.html">Inicio</a>
             <a href="rules.html">Reglas</a>
             <a href="upload.html">Subir Arte</a>
             <a href="info.html">Información</a>
+            <a href="https://ko-fi.com/itsbynyko" target="_blank">Donar</a>
         </nav>
     </div>
 
@@ -427,18 +41,18 @@
 
 <div class="loading-wrapper" id="loading-container">
     <div class="spinner"></div>
-    <div style="font-size: 14px; letter-spacing: 0.5px;">Conectando con la galería...</div>
+    <div class="loading-text"></p>Conectando con la galería... </p></p>Esto puede tardar un poco.</p></div>
 </div>
 
 <div class="feed" id="feed"></div>
 
 <div class="load-more-container">
-    <button id="loadMoreBtn" class="load-btn" style="display: none;" onclick="loadNextBatch()">Ver más obras</button>
+    <button id="loadMoreBtn" class="load-btn" onclick="loadNextBatch()">Ver más obras</button>
 </div>
 
 <div class="lightbox" id="lightbox">
     <button class="nav-btn left" onclick="prevImage(event)">❮</button>
-    <img id="lightboxImg">
+    <img id="lightboxImg" alt="Vista ampliada de la obra">
     <button class="nav-btn right" onclick="nextImage(event)">❯</button>
 
     <div class="lightbox-info" id="lightboxInfo">
@@ -459,7 +73,8 @@
     </div>
 </div>
 
-<script>
+    <!-- Funcionalidad principal -->
+    <script>
 const API_BASE = "https://script.google.com/macros/s/AKfycbzcwKYtpAnlFnZOSS7-jbQ2cDeiyZThmojE28E-YxmMnTaiegmmnnrmS_7q-NIX4l_q/exec";
 
 let imageList = []; 
@@ -475,10 +90,10 @@ let isSequenceActive = false;
 
 let currentCacheVersion = "stable";
 
-// Control en memoria volátil: se reinicia siempre al refrescar con F5
+// Control temporal: se reinicia al recargar la página
 let yaAceptoNsfw = false; 
 
-// SE ASEGURA DE QUE EL CHECKBOX SIEMPRE EMPIECE DESACTIVADO TRAS CARGAR LA PÁGINA
+// El checkbox siempre inicia desactivado
 const nsfwToggle = document.getElementById("nsfwToggle");
 nsfwToggle.checked = false;
 
@@ -498,7 +113,7 @@ async function loadFeed() {
         console.error("Error cargando backend:", err);
         const loader = document.getElementById("loading-container");
         if(loader) {
-            loader.innerHTML = '<div style="text-align:center; color:#e74c3c; padding:50px; width:100%;">Error al conectar con la galería de Artist Corner.</div>';
+            loader.innerHTML = '<div class="loading-error">Error al conectar con la galería de Artist Corner.</div>';
         }
     }
 }
@@ -625,6 +240,8 @@ function renderCardSingle(post, currentBatchLimit) {
     card.className = "card";
     card.setAttribute("data-nsfw", isPostNsfw); 
     card.style.animationDelay = `${(imageList.length % currentBatchLimit) * 0.03}s`;
+    const randomTilt = (Math.random() * 6 - 3).toFixed(2); // -3° a 3°, como si estuviera clavada a mano
+    card.style.setProperty("--rot", `${randomTilt}deg`);
 
     const hasStar = isImageStarred(post.fileId);
     const imgIndex = imageList.length - 1;
@@ -639,14 +256,14 @@ function renderCardSingle(post, currentBatchLimit) {
         </div>
         <div class="info">
             <div class="title-row">
-                <div class="title" style="display:flex; align-items:center; flex-wrap:wrap; font-weight:bold;">
+                <div class="title card-title">
                     ${title} 
-                    ${isPostNsfw ? '<span style="color:#e74c3c; font-size:10px; font-weight:bold; border:1px solid #e74c3c; padding:1px 3px; border-radius:3px; margin-left:5px;">18+</span>' : ''}
+                    ${isPostNsfw ? '<span class="age-badge">18+</span>' : ''}
                 </div>
                 <button class="star-btn ${hasStar ? 'starred' : ''}" onclick="handleCardStar(event, '${post.fileId}', this)">★</button>
             </div>
             <div class="author">Por: ${author}</div>
-            ${post.description ? `<div style="font-size:12px; color:#888; margin-top:5px;">${post.description}</div>` : ''}
+            ${post.description ? `<div class="description">${post.description}</div>` : ''}
         </div>
     `;
     
@@ -673,9 +290,7 @@ document.getElementById("searchInput").addEventListener("input", () => {
 });
 
 
-/* ====================================================================
-    INTERCEPTOR DE ADVERTENCIA +18
-======================================================================= */
+/* Advertencia de contenido +18 */
 const nsfwModal = document.getElementById("nsfwModal");
 const nsfwContinueBtn = document.getElementById("nsfwContinueBtn");
 const nsfwExitBtn = document.getElementById("nsfwExitBtn");
@@ -703,9 +318,7 @@ nsfwExitBtn.addEventListener("click", () => {
 });
 
 
-/* ==========================================
-   MÓDULO DE LIGHTBOX
-========================================== */
+/* Lightbox */
 const lightboxImg = document.getElementById("lightboxImg");
 
 function clearLightboxImage() {
@@ -809,7 +422,8 @@ document.addEventListener("keydown", e => {
 });
 
 loadFeed();
-</script>
+    </script>
 
 </body>
 </html>
+
